@@ -1,2 +1,1 @@
-# mcc
-# mcc
+# Mini C Compiler (mcc)
