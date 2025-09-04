@@ -1,1 +1,1 @@
-# Mini C Compiler (mcc)
+# 🐜 C Compiler (antcc)
