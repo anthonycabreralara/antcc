@@ -25,7 +25,7 @@ public:
 
 class FunctionNode : public Node {
 public:
-    int name;
+    std::string name;
     TokenType returnType;
     FunctionNode(std::string n, TokenType r);
 };
