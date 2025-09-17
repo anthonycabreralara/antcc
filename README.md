@@ -1,4 +1,4 @@
 # 🐜 C Compiler (antcc)
 
 compile using clang
->> clang++ src/*.cpp -o antcc
+> clang++ src/*.cpp -o antcc
