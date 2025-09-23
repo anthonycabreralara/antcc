@@ -2,11 +2,12 @@
 #define PARSER_H
 
 #include <vector>
+#include <string>
 #include "Lexer.h" 
 
 class Node {
 public:
-    enum Type { RETURN, BINARY_OP, NUMBER, FUNCTION };
+    enum Type { PROGRAM, FUNCTION, RETURN, NUMBER };
     Type type;
     virtual ~Node() = default;
 };
@@ -17,10 +18,10 @@ public:
     ReturnNode(Node* e);
 };
 
-class NumberNode : public Node {
+class ConstantNode : public Node {
 public:
     int value;
-    NumberNode(int v);
+    ConstantNode(int v);
 };
 
 class FunctionNode : public Node {
@@ -30,5 +31,27 @@ public:
     FunctionNode(std::string n, TokenType r);
 };
 
-Node parse(std::vector<Token>& tokens);
+class ProgramNode : public Node {
+public:
+    FunctionNode* function;
+    ProgramNode(FunctionNode* func);
+};
+
+class Parser {
+private:
+    int current = 0;
+    std::vector<Token>& tokens;
+    ProgramNode* parseProgram();
+    FunctionNode* parseFunction();
+    bool isAtEnd() const;
+    Token& advance();
+    Token& peek();
+    bool check(TokenType type) const;
+    bool match(TokenType type);
+
+public:
+    Parser(std::vector<Token>& tokens);
+    Node* parse(); // returns AST root
+};
+
 #endif
