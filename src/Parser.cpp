@@ -103,9 +103,6 @@ FunctionNode* Parser::parseFunction() {
 
     valid = valid && match(TokenType::CLOSE_BRACE);
 
-    std::cout << "valid: " << valid << std::endl;
-    std::cout << "current: " << current << std::endl;
-
     return new FunctionNode(name, returnType, statement);
 }
 
@@ -115,7 +112,5 @@ ProgramNode* Parser::parseProgram() {
 }
 
 Node* Parser::parse() {
-    // Placeholder for actual parsing logic
-    std::cout << "Parsing not yet implemented.\n";
     return parseProgram();
 }
