@@ -45,6 +45,5 @@ int main(int argc, char *argv[]) {
 
   Parser parser(tokens);
   Node* AST = parser.parse();
-  std::cout << AST->type << std::endl;
   return 0;
 }

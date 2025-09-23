@@ -20,15 +20,16 @@ public:
 
 class ConstantNode : public Node {
 public:
-    int value;
-    ConstantNode(int v);
+    std::string value;
+    ConstantNode(std::string v);
 };
 
 class FunctionNode : public Node {
 public:
     std::string name;
     TokenType returnType;
-    FunctionNode(std::string n, TokenType r);
+    Node* statement;
+    FunctionNode(std::string n, TokenType r, Node* stmt);
 };
 
 class ProgramNode : public Node {
@@ -41,6 +42,8 @@ class Parser {
 private:
     int current = 0;
     std::vector<Token>& tokens;
+    Node* parseExpression();
+    Node* parseStatemant();
     ProgramNode* parseProgram();
     FunctionNode* parseFunction();
     bool isAtEnd() const;
