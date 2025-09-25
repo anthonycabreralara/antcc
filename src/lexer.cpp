@@ -1,5 +1,4 @@
-// Lexer.cpp
-#include "Lexer.h"
+#include "lexer.h"
 #include <iostream>
 
 Token::Token(TokenType t, const std::string& v) : type(t), value(v) {}

@@ -1,6 +1,7 @@
 // main.cpp
-#include "Lexer.h"
-#include "Parser.h"
+#include "codegen.h"
+#include "lexer.h"
+#include "parser.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,7 +31,7 @@ void printTabs(int count) {
     std::cout << ' ';
   }
 }
-// Return(Constant(2))
+
 void printAST(Node* node, int count) {
   if (node->type == Node::PROGRAM) {
     ProgramNode* programNode = static_cast<ProgramNode*>(node);
@@ -69,7 +70,6 @@ void printAST(Node* node, int count) {
 
 }
 
-
 int main(int argc, char *argv[]) {
 
   if (argc < 2) {
@@ -86,5 +86,6 @@ int main(int argc, char *argv[]) {
   Parser parser(tokens);
   Node* AST = parser.parse();
   printAST(AST, 0);
+  generateCode(AST);
   return 0;
 }
