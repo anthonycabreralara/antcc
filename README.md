@@ -1,8 +1,12 @@
-# 🐜 C Compiler (antcc)
-based on https://nostarch.com/writing-c-compiler
+# 🐜 antcc
+Toy C compiler based on [Writing a C Compiler](https://nostarch.com/writing-c-compiler)
 
-compile using clang
-> clang++ src/*.cpp -o antcc
+**Build:**
+```bash
+clang++ src/*.cpp -o antcc
+```
 
-usage
-> ./antcc <file>
+**Run:**
+```bash
+./antcc <file>
+```
