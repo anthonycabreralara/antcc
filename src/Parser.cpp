@@ -21,7 +21,7 @@ ReturnNode::ReturnNode(Node* e) {
 
 // Constructor for ConstantNode
 ConstantNode::ConstantNode(std::string v) {
-    type = NUMBER;
+    type = CONSTANT;
     value = v;
 }
 
@@ -41,9 +41,7 @@ ProgramNode::ProgramNode(FunctionNode* func) {
 
 // -------- Parser Implementation --------
 
-Parser::Parser(std::vector<Token>& tokens) : tokens(tokens) {
-    std::cout << "Parser initialized with " << tokens.size() << " tokens.\n";
-}
+Parser::Parser(std::vector<Token>& tokens) : tokens(tokens) {}
 
 bool Parser::isAtEnd() const {
     return current >= tokens.size();

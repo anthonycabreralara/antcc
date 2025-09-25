@@ -7,7 +7,7 @@
 
 class Node {
 public:
-    enum Type { PROGRAM, FUNCTION, RETURN, NUMBER };
+    enum Type { PROGRAM, FUNCTION, RETURN, CONSTANT };
     Type type;
     virtual ~Node() = default;
 };
