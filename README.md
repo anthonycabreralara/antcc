@@ -1,4 +1,4 @@
-# 🐜 antcc
+# 🐜 C Compiler
 Toy C compiler based on [Writing a C Compiler](https://nostarch.com/writing-c-compiler)
 
 **Build:**
