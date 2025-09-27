@@ -1,46 +1,11 @@
 #include "parser.h"
+#include "ast.h"
 #include "lexer.h"
+#include <memory>
 #include <iostream>
 #include <vector>
 
-/* FORMAL GRAMMER 
-<program> ::= <function> 
-<function> ::= "int" <identifier> "(" "void" ")" "{" <statement> "}" 
-<statement> ::= "return" <expr> ";" 
-<expr> ::= <int> 
-<identifier> ::= ? An identifier token ? 
-<int> ::= ? A constant token ? */
-
-// -------- Node Constructors --------
-
-// Constructor for ReturnNode
-ReturnNode::ReturnNode(Node* e) {
-    type = RETURN;
-    expr = e;
-}
-
-// Constructor for ConstantNode
-ConstantNode::ConstantNode(std::string v) {
-    type = CONSTANT;
-    value = v;
-}
-
-// Constructor for FunctionNode
-FunctionNode::FunctionNode(std::string n, TokenType r, Node* stmt) {
-    type = FUNCTION;
-    name = n;
-    returnType = r;
-    statement = stmt;
-}
-
-// Constructor for ProgramNode
-ProgramNode::ProgramNode(FunctionNode* func) {
-    type = PROGRAM;
-    function = func;
-}
-
 // -------- Parser Implementation --------
-
 Parser::Parser(std::vector<Token>& tokens) : tokens(tokens) {}
 
 bool Parser::isAtEnd() const {
@@ -65,50 +30,49 @@ bool Parser::match(TokenType type) {
     return false;
 }
 
-
-Node* Parser::parseExpression() {
-  bool valid = true;
-  valid = valid && match(TokenType::CONSTANT);
-  return new ConstantNode(tokens[current-1].value);
+std::unique_ptr<Node> Parser::parseExpression() {
+    bool valid = true;
+    valid = valid && match(TokenType::CONSTANT);
+    return std::make_unique<ConstantNode>(tokens[current - 1].value);
 }
 
-Node* Parser::parseStatemant() {
+std::unique_ptr<Node> Parser::parseStatement() {
     bool valid = true;
     valid = valid && match(TokenType::RETURN_KEYWORD);
-    Node* expression = parseExpression();
+    auto expression = parseExpression();
     valid = valid && match(TokenType::SEMICOLON);
-    return new ReturnNode(expression);
+    return std::make_unique<ReturnNode>(std::move(expression));
 }
 
-FunctionNode* Parser::parseFunction() {
+std::unique_ptr<FunctionNode> Parser::parseFunction() {
     bool valid = true;
     TokenType returnType = TokenType::UNKNOWN;
-    std::string name = "";
+    std::string name;
 
     if (check(TokenType::INT_KEYWORD)) {
         returnType = TokenType::INT_KEYWORD;
         valid = valid && match(TokenType::INT_KEYWORD);
     }
     valid = valid && match(TokenType::IDENTIFIER);
-    name = tokens[current-1].value; 
+    name = tokens[current - 1].value; 
 
     valid = valid && match(TokenType::OPEN_PARENTHESIS);
     valid = valid && match(TokenType::VOID_KEYWORD);
     valid = valid && match(TokenType::CLOSE_PARENTHESIS);
     valid = valid && match(TokenType::OPEN_BRACE);
 
-    Node* statement = parseStatemant();
+    auto statement = parseStatement();
 
     valid = valid && match(TokenType::CLOSE_BRACE);
 
-    return new FunctionNode(name, returnType, statement);
+    return std::make_unique<FunctionNode>(name, static_cast<int>(returnType), std::move(statement));
 }
 
-ProgramNode* Parser::parseProgram() {
-    FunctionNode* func = parseFunction();
-    return new ProgramNode(func);
+std::unique_ptr<ProgramNode> Parser::parseProgram() {
+    auto func = parseFunction();
+    return std::make_unique<ProgramNode>(std::move(func));
 }
 
-Node* Parser::parse() {
+std::unique_ptr<Node> Parser::parse() {
     return parseProgram();
 }
