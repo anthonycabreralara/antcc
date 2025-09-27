@@ -9,11 +9,13 @@ void generate(Node* node, std::ofstream& outf) {
   if (node->type == Node::PROGRAM) {
     ProgramNode* programNode = static_cast<ProgramNode*>(node);
     generate(programNode->function, outf);
+    outf << ".section .note.GNU-stack,"",@progbits";
   }
   
   if (node->type == Node::FUNCTION) {
     FunctionNode* functionNode = static_cast<FunctionNode*>(node);
-    outf << "_" << functionNode->name << "\n";
+    outf << "\t.global main\n";
+    outf << functionNode->name << ":\n";
     generate(functionNode->statement, outf);
   }
 

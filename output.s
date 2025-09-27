@@ -1,3 +1,4 @@
-_main
+	.global main
+main:
 	movl $2, %eax
-ret
+ret.section .note.GNU-stack,,@progbits
