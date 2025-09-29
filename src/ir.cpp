@@ -23,10 +23,10 @@ IRReg::IRReg(std::string v) {
     value = std::move(v);
 }
 
-IRFunction::IRFunction(std::string n, std::vector<std::unique_ptr<IRNode>>&& i)
-    : name(std::move(n)), instructions(std::move(i)) {
-    type = IRNodeType::FUNCTION;
-}
+IRInstructions::IRInstructions() {}
+
+IRFunction::IRFunction(std::string n, std::unique_ptr<IRInstructions> instr)
+    : name(std::move(n)), instructions(std::move(instr)) {}
 
 
 IRProgram::IRProgram(std::unique_ptr<IRFunction> func) {

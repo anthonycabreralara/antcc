@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-enum class IRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER };
+enum class IRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER, INSTRUCTIONS };
 
 class IRNode {
 public:
@@ -37,11 +37,19 @@ public:
     IRReg (std::string v);
 };
 
+class IRInstructions : public IRNode {
+public:
+    std::vector<std::unique_ptr<IRNode>> instructions;
+
+    IRInstructions();
+};
+
 class IRFunction : public IRNode {
 public:
     std::string name;
-    std::vector<std::unique_ptr<IRNode>> instructions;
-    IRFunction(std::string n, std::vector<std::unique_ptr<IRNode>>&& i);
+    std::unique_ptr<IRInstructions> instructions;
+
+    IRFunction(std::string n, std::unique_ptr<IRInstructions> instr);
 };
 
 class IRProgram : public IRNode {
