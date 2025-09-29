@@ -1,42 +1,35 @@
 #include "ir.h"
-#include <cstdio>
+#include <vector>
+#include <memory>
 
-// ---------------- Operands -----------------
-void IRRegister::emit() const {
-    printf("%s", name.c_str());
+// -------- IR Node Constructors --------
+IRRet::IRRet() {
+    type = IRNodeType::RETURN;
 }
 
-void IRImm::emit() const {
-    printf("%d", value);
+IRImm::IRImm(std::string v) {
+    type = IRNodeType::IMMEDIATE;
+    value = std::move(v);
 }
 
-// ---------------- Instructions -------------
-IRMov::IRMov(std::unique_ptr<IROperand> d, std::unique_ptr<IROperand> s)
-    : dst(std::move(d)), src(std::move(s)) {}
-
-void IRMov::emit() const {
-    printf("    mov ");
-    dst->emit();
-    printf(", ");
-    src->emit();
-    printf("\n");
+IRMov::IRMov(std::unique_ptr<IRNode> s, std::unique_ptr<IRNode> d) {
+    type = IRNodeType::MOV;
+    src = std::move(s);
+    dst = std::move(d);
 }
 
-void IRRet::emit() const {
-    printf("    ret\n");
+IRReg::IRReg(std::string v) {
+    type = IRNodeType::REGISTER;
+    value = std::move(v);
 }
 
-// ---------------- Function & Program -------
-void IRFunction::emit() const {
-    printf("%s:\n", name.c_str());
-    for (const auto& instr : instructions) {
-        instr->emit();
-    }
-    printf("\n");
+IRFunction::IRFunction(std::string n, std::vector<std::unique_ptr<IRNode>>&& i)
+    : name(std::move(n)), instructions(std::move(i)) {
+    type = IRNodeType::FUNCTION;
 }
 
-void IRProgram::emit() const {
-    for (const auto& func : functions) {
-        func->emit();
-    }
+
+IRProgram::IRProgram(std::unique_ptr<IRFunction> func) {
+    type = IRNodeType::PROGRAM;
+    function = std::move(func);
 }

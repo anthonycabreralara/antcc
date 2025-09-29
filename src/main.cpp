@@ -1,5 +1,7 @@
 #include "lexer.h"
 #include "parser.h"
+#include "codegen.h"
+#include "ir.h"
 #include "ast.h"
 #include <iostream>
 #include <fstream>
@@ -107,6 +109,8 @@ int main(int argc, char *argv[]) {
         printAST(AST.get(), 0);  // pass raw pointer for printing
         return 0;
     }
+
+    generateCode(AST.get());
 
     return 0;
 }

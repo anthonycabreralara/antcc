@@ -5,53 +5,49 @@
 #include <vector>
 #include <memory>
 
-// ---------------- Base Node ----------------
-struct IRNode {
+enum class IRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER };
+
+class IRNode {
+public:
+    IRNodeType type;
     virtual ~IRNode() = default;
-    virtual void emit() const = 0;  // For final assembly output
 };
 
-// ---------------- Operands -----------------
-struct IROperand : IRNode {};
+class IRRet : public IRNode {
+public:
+    IRRet();
+};
 
-struct IRRegister : IROperand {
+class IRImm : public IRNode {
+public:
+    std::string value;
+    IRImm (std::string v);
+};
+
+class IRMov : public IRNode {
+public:
+    std::unique_ptr<IRNode> src;
+    std::unique_ptr<IRNode> dst;
+    IRMov(std::unique_ptr<IRNode> s, std::unique_ptr<IRNode> d);
+};
+
+class IRReg : public IRNode {
+public:
+    std::string value;
+    IRReg (std::string v);
+};
+
+class IRFunction : public IRNode {
+public:
     std::string name;
-    explicit IRRegister(const std::string& n) : name(n) {}
-    void emit() const override;
+    std::vector<std::unique_ptr<IRNode>> instructions;
+    IRFunction(std::string n, std::vector<std::unique_ptr<IRNode>>&& i);
 };
 
-struct IRImm : IROperand {
-    int value;
-    explicit IRImm(int v) : value(v) {}
-    void emit() const override;
+class IRProgram : public IRNode {
+public:
+    std::unique_ptr<IRFunction> function;
+    IRProgram(std::unique_ptr<IRFunction> func);
 };
 
-// ---------------- Instructions -------------
-struct IRInstr : IRNode {};
-
-struct IRMov : IRInstr {
-    std::unique_ptr<IROperand> dst;
-    std::unique_ptr<IROperand> src;
-    IRMov(std::unique_ptr<IROperand> d, std::unique_ptr<IROperand> s);
-    void emit() const override;
-};
-
-struct IRRet : IRInstr {
-    void emit() const override;
-};
-
-// ---------------- Function & Program -------
-struct IRFunction : IRNode {
-    std::string name;
-    std::vector<std::unique_ptr<IRInstr>> instructions;
-
-    explicit IRFunction(const std::string& n) : name(n) {}
-    void emit() const override;
-};
-
-struct IRProgram : IRNode {
-    std::vector<std::unique_ptr<IRFunction>> functions;
-    void emit() const override;
-};
-
-#endif // IR_H
+#endif
