@@ -104,16 +104,17 @@ int main(int argc, char *argv[]) {
     }
 
     Parser parser(tokens);
-    auto AST = parser.parse();  // unique_ptr<Node>
+    auto ast = parser.parse();  // unique_ptr<Node>
 
     if (option == "--parse") {
-        printAST(AST.get(), 0);  // pass raw pointer for printing
+        printAST(ast.get(), 0);  // pass raw pointer for printing
         return 0;
     }
 
-    auto ir = generateCode(AST.get());
+    auto ir = generateCode(ast.get());
 
-    if (option == "-codegen") {
+    if (option == "--codegen") {
+        printIR(ir.get(), 0);
         return 0;
     }
 

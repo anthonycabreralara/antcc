@@ -70,13 +70,17 @@ std::vector<Token> Lexer::tokenize() {
         }
         else if (currentChar == '(' || currentChar == ')' ||
                  currentChar == '{' || currentChar == '}' ||
-                 currentChar == ';') {
+                 currentChar == ';' || currentChar == '-' ||
+                 currentChar == '~' || currentChar == '!') {
             switch (currentChar) {
                 case '(': tokens.emplace_back(TokenType::OPEN_PARENTHESIS, "("); break;
                 case ')': tokens.emplace_back(TokenType::CLOSE_PARENTHESIS, ")"); break;
                 case '{': tokens.emplace_back(TokenType::OPEN_BRACE, "{"); break;
                 case '}': tokens.emplace_back(TokenType::CLOSE_BRACE, "}"); break;
                 case ';': tokens.emplace_back(TokenType::SEMICOLON, ";"); break;
+                case '-': tokens.emplace_back(TokenType::NEGATION, "-"); break;
+                case '~': tokens.emplace_back(TokenType::BITWISE_COMPLEMENT, "~"); break;
+                case '!': tokens.emplace_back(TokenType::LOGICAL_NEGATION, "!"); break;
             }
             position++;
         }
@@ -101,6 +105,9 @@ std::string getTokenTypeName(TokenType type) {
         case TokenType::OPEN_BRACE: return "OPEN_BRACE";
         case TokenType::CLOSE_BRACE: return "CLOSE_BRACE";
         case TokenType::SEMICOLON: return "SEMICOLON";
+        case TokenType::NEGATION: return "NEGATION";
+        case TokenType::BITWISE_COMPLEMENT: return "BITWISE_COMPLIMENT";
+        case TokenType::LOGICAL_NEGATION: return "LOGICAL_NEGATION";
         case TokenType::UNKNOWN: return "UNKNOWN";
     }
     return "UNKNOWN";

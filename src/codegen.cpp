@@ -48,3 +48,56 @@ std::unique_ptr<IRNode> generateCode(const Node* node) {
             return nullptr;
     }
 }
+
+void printSpace(int count) {
+    for (int i = 0; i < count; i++) {
+        std::cout << ' ';
+    }
+}
+
+void printIR(const IRNode* node, int space) {
+    switch (node->type) {
+        case IRNodeType::PROGRAM: {
+            std::cout << "program" << std::endl;
+            const auto* programNode = static_cast<const IRProgram*>(node);
+            printIR(programNode->function.get(), space);
+            break;
+        }
+        case IRNodeType::FUNCTION: {
+            const auto* functionNode = static_cast<const IRFunction*>(node);
+            std::cout << "\t.global " << functionNode->name << std::endl;
+            std::cout << functionNode->name << ":" << std::endl;
+
+            for (const auto& instr : functionNode->instructions->instructions) {
+                printIR(instr.get(), space);
+            }
+
+            break;
+        }
+        case IRNodeType::MOV: {
+            const auto* moveNode = static_cast<const IRMov*>(node);
+            std::cout << "\tmovl ";
+            printIR(moveNode->src.get(), space);
+            std::cout << ", ";
+            printIR(moveNode->dst.get(), space);
+            std::cout << std::endl;
+            break;
+        }
+        case IRNodeType::IMMEDIATE: {
+            const auto* immNode = static_cast<const IRImm*>(node);
+            std::cout << "$" << immNode->value;
+            break;
+        }
+        case IRNodeType::REGISTER: {
+            const auto* regNode = static_cast<const IRReg*>(node);
+            std::cout << "%" << regNode->value;
+            break;
+        }
+        case IRNodeType::RETURN: {
+            std::cout << "\tret" << std::endl;
+            break;
+        }
+        default:
+            std::cout << "whyyy" << std::endl;
+    }
+}
