@@ -11,7 +11,7 @@ void emit(const IRNode* node, std::ofstream& outf) {
             std::cout << "program" << std::endl;
             const auto* programNode = static_cast<const IRProgram*>(node);
             emit(programNode->function.get(), outf);
-            outf << ".section .note.GNU-stack,"",@progbits";
+            outf << ".section .note.GNU-stack,\"\",@progbits";
             break;
         }
         case IRNodeType::FUNCTION: {
