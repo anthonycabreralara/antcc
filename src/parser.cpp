@@ -5,6 +5,15 @@
 #include <iostream>
 #include <vector>
 
+/*
+FORMER GRAMMER
+<program> ::= <function>
+<function> ::= "int" <id> "(" ")" "{" <statement> "}"
+<statement> ::= "return" <exp> ";"
+<exp> ::= <unary_op> <exp> | <int>
+<unary_op> ::= "!" | "~" | "-"
+*/
+
 // -------- Parser Implementation --------
 Parser::Parser(std::vector<Token>& tokens) : tokens(tokens) {}
 
@@ -32,8 +41,15 @@ bool Parser::match(TokenType type) {
 
 std::unique_ptr<Node> Parser::parseExpression() {
     bool valid = true;
+    if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT) || check(TokenType::LOGICAL_NEGATION)) {
+        TokenType opType = tokens[current].type;
+        valid = valid && match(opType);
+        auto expression = parseExpression();
+        return std::make_unique<UnOpNode>(tokens[current - 1].value, std::move(expression));
+    }
     valid = valid && match(TokenType::CONSTANT);
     return std::make_unique<ConstantNode>(tokens[current - 1].value);
+    
 }
 
 std::unique_ptr<Node> Parser::parseStatement() {

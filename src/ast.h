@@ -4,7 +4,14 @@
 #include <string>
 #include <memory>
 
-enum class NodeType { PROGRAM, FUNCTION, RETURN, CONSTANT };
+enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, RETURN, CONSTANT };
+
+/*
+program = Program(function_declaration)
+function_declaration = Function(string, statement) //string is the function name
+statement = Return(exp)
+exp = UnOp(operator, exp) | Constant(int)
+*/
 
 class Node {
 public:
@@ -16,6 +23,13 @@ class ReturnNode : public Node {
 public:
     std::unique_ptr<Node> expr;
     ReturnNode(std::unique_ptr<Node> e);
+};
+
+class UnOpNode : public Node {
+public:
+    std::string op;
+    std::unique_ptr<Node> expr;
+    UnOpNode(std::string o, std::unique_ptr<Node> e);
 };
 
 class ConstantNode : public Node {

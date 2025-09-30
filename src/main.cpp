@@ -72,6 +72,14 @@ void printAST(const Node* node, int count) {
             std::cout << "Constant(" << constantNode->value << ")" << std::endl;
             break;
         }
+        case NodeType::UNARY_OP: {
+            const UnOpNode* unOpNode = static_cast<const UnOpNode*>(node);
+            printTabs(count);
+            std::cout << "UnOp(" << unOpNode->op << ", " << std::endl;
+            printAST(unOpNode->expr.get(), count + 3);
+            printTabs(count);
+            std::cout << ")" << std::endl;
+        }
     }
 }
 

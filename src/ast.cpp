@@ -6,6 +6,12 @@ ReturnNode::ReturnNode(std::unique_ptr<Node> e) {
     expr = std::move(e);
 }
 
+UnOpNode::UnOpNode(std::string o, std::unique_ptr<Node> e) {
+    type = NodeType::UNARY_OP;
+    op = o;
+    expr = std::move(e);
+}
+
 ConstantNode::ConstantNode(std::string v) {
     type = NodeType::CONSTANT;
     value = std::move(v);
