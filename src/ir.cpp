@@ -26,7 +26,9 @@ IRReg::IRReg(std::string v) {
 IRInstructions::IRInstructions() {}
 
 IRFunction::IRFunction(std::string n, std::unique_ptr<IRInstructions> instr)
-    : name(std::move(n)), instructions(std::move(instr)) {}
+    : name(std::move(n)), instructions(std::move(instr)) {
+        type = IRNodeType::FUNCTION;
+    }
 
 
 IRProgram::IRProgram(std::unique_ptr<IRFunction> func) {

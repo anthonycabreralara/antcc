@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "codegen.h"
 #include "ir.h"
+#include "emitter.h"
 #include "ast.h"
 #include <iostream>
 #include <fstream>
@@ -110,7 +111,17 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    generateCode(AST.get());
+    auto ir = generateCode(AST.get());
+
+    if (option == "-codegen") {
+        return 0;
+    }
+
+    emitCode(ir.get());
+
+
+
+
 
     return 0;
 }
