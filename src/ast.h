@@ -52,4 +52,7 @@ public:
     ProgramNode(std::unique_ptr<FunctionNode> func);
 };
 
+void printTabs(int count);
+void printAST(const Node* node, int count);
+
 #endif

@@ -43,9 +43,10 @@ std::unique_ptr<Node> Parser::parseExpression() {
     bool valid = true;
     if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT) || check(TokenType::LOGICAL_NEGATION)) {
         TokenType opType = tokens[current].type;
+        std::string opValue = tokens[current].value;
         valid = valid && match(opType);
         auto expression = parseExpression();
-        return std::make_unique<UnOpNode>(tokens[current - 1].value, std::move(expression));
+        return std::make_unique<UnOpNode>(opValue, std::move(expression));
     }
     valid = valid && match(TokenType::CONSTANT);
     return std::make_unique<ConstantNode>(tokens[current - 1].value);
