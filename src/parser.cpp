@@ -41,6 +41,13 @@ bool Parser::match(TokenType type) {
 
 std::unique_ptr<Node> Parser::parseExpression() {
     bool valid = true;
+    if (check(TokenType::OPEN_PARENTHESIS)) {
+        valid = valid && match(TokenType::OPEN_PARENTHESIS);
+        auto expression = parseExpression();
+        valid = valid && match(TokenType::CLOSE_PARENTHESIS);
+        return expression;
+    }
+
     if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT) || check(TokenType::LOGICAL_NEGATION)) {
         TokenType opType = tokens[current].type;
         std::string opValue = tokens[current].value;
