@@ -16,10 +16,11 @@ enum class TokenType {
     CLOSE_PARENTHESIS,
     OPEN_BRACE,
     CLOSE_BRACE,
-    SEMICOLON,
-    NEGATION,
-    BITWISE_COMPLEMENT,
-    LOGICAL_NEGATION,
+    SEMICOLON, // ;
+    NEGATION, // -
+    BITWISE_COMPLEMENT, // ~
+    DECREMENT, // ~
+    LOGICAL_NEGATION, // !
     UNKNOWN
 };
 

@@ -78,9 +78,17 @@ std::vector<Token> Lexer::tokenize() {
                 case '{': tokens.emplace_back(TokenType::OPEN_BRACE, "{"); break;
                 case '}': tokens.emplace_back(TokenType::CLOSE_BRACE, "}"); break;
                 case ';': tokens.emplace_back(TokenType::SEMICOLON, ";"); break;
-                case '-': tokens.emplace_back(TokenType::NEGATION, "-"); break;
                 case '~': tokens.emplace_back(TokenType::BITWISE_COMPLEMENT, "~"); break;
                 case '!': tokens.emplace_back(TokenType::LOGICAL_NEGATION, "!"); break;
+                case '-':
+                    if (position + 1 < input.length() && input[position + 1] == '-') {
+                        tokens.emplace_back(TokenType::DECREMENT, "--");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::NEGATION, "-"); break;
+                    }
+                
             }
             position++;
         }
@@ -106,6 +114,7 @@ std::string getTokenTypeName(TokenType type) {
         case TokenType::CLOSE_BRACE: return "CLOSE_BRACE";
         case TokenType::SEMICOLON: return "SEMICOLON";
         case TokenType::NEGATION: return "NEGATION";
+        case TokenType::DECREMENT: return "DECREMENT";
         case TokenType::BITWISE_COMPLEMENT: return "BITWISE_COMPLIMENT";
         case TokenType::LOGICAL_NEGATION: return "LOGICAL_NEGATION";
         case TokenType::UNKNOWN: return "UNKNOWN";
