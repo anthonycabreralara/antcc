@@ -5,12 +5,33 @@
 #include <vector>
 #include <memory>
 
-enum class TackyIRNodeType {RETURN, CONSTANT, NEGATE, COMPLEMENT, VAR, UNARY};
+enum class TackyIRNodeType {PROGRAM, FUNCTION, RETURN, CONSTANT, NEGATE, COMPLEMENT, VAR, UNARY};
 
 class TackyIRNode {
 public:
     TackyIRNodeType type;
     virtual ~TackyIRNode() = default;
+};
+
+class TackyIRProgram : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> function;
+    TackyIRProgram(std::unique_ptr<TackyIRNode> func);
+};
+
+class TackyIRInstructions : public TackyIRNode {
+public:
+    std::vector<std::unique_ptr<TackyIRNode>> instructions;
+
+    TackyIRInstructions();
+};
+
+class TackyIRFunction : public TackyIRNode {
+public:
+    std::string name;
+    std::unique_ptr<TackyIRInstructions> instructions;
+
+    TackyIRFunction(std::string n, std::unique_ptr<TackyIRInstructions> instr);
 };
 
 class TackyIRReturn : public TackyIRNode {
