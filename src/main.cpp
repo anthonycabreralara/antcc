@@ -1,7 +1,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "codegen.h"
-#include "ir.h"
+#include "asm_ir.h"
 #include "emitter.h"
 #include "ast.h"
 #include <iostream>

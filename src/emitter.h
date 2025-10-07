@@ -1,8 +1,8 @@
 #ifndef EMITTER_H
 #define EMITTER_H
-#include "ir.h"
+#include "asm_ir.h"
 #include <memory>
 
-void emitCode(const IRNode* node);
+void emitCode(const AsmIRNode* node);
 
 #endif

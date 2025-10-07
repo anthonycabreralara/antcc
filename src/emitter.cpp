@@ -1,22 +1,20 @@
 #include "emitter.h"
-#include "ir.h"
+#include "asm_ir.h"
 #include <iostream>
 #include <fstream>
 
-
-
-void emit(const IRNode* node, std::ofstream& outf) {
+void emit(const AsmIRNode* node, std::ofstream& outf) {
     switch (node->type) {
-        case IRNodeType::PROGRAM: {
+        case AsmIRNodeType::PROGRAM: {
             std::cout << "program" << std::endl;
-            const auto* programNode = static_cast<const IRProgram*>(node);
+            const auto* programNode = static_cast<const AsmIRProgram*>(node);
             emit(programNode->function.get(), outf);
             outf << ".section .note.GNU-stack,\"\",@progbits";
             break;
         }
-        case IRNodeType::FUNCTION: {
+        case AsmIRNodeType::FUNCTION: {
             std::cout << "function" << std::endl;
-            const auto* functionNode = static_cast<const IRFunction*>(node);
+            const auto* functionNode = static_cast<const AsmIRFunction*>(node);
             outf << "\t.global " << functionNode->name << "\n";
             outf << functionNode->name << ":\n";
 
@@ -26,9 +24,9 @@ void emit(const IRNode* node, std::ofstream& outf) {
 
             break;
         }
-        case IRNodeType::MOV: {
+        case AsmIRNodeType::MOV: {
             std::cout << "mov" << std::endl;
-            const auto* moveNode = static_cast<const IRMov*>(node);
+            const auto* moveNode = static_cast<const AsmIRMov*>(node);
             outf << "\tmovl ";
             emit(moveNode->src.get(), outf);
             outf << ", ";
@@ -36,17 +34,17 @@ void emit(const IRNode* node, std::ofstream& outf) {
             outf << "\n";
             break;
         }
-        case IRNodeType::IMMEDIATE: {
-            const auto* immNode = static_cast<const IRImm*>(node);
+        case AsmIRNodeType::IMMEDIATE: {
+            const auto* immNode = static_cast<const AsmIRImm*>(node);
             outf << "$" << immNode->value;
             break;
         }
-        case IRNodeType::REGISTER: {
-            const auto* regNode = static_cast<const IRReg*>(node);
+        case AsmIRNodeType::REGISTER: {
+            const auto* regNode = static_cast<const AsmIRReg*>(node);
             outf << "%" << regNode->value;
             break;
         }
-        case IRNodeType::RETURN: {
+        case AsmIRNodeType::RETURN: {
             std::cout << "return" << std::endl;
             outf << "\tret\n";
             break;
@@ -56,7 +54,7 @@ void emit(const IRNode* node, std::ofstream& outf) {
     }
 }
 
-void emitCode(const IRNode* node) {
+void emitCode(const AsmIRNode* node) {
     std::ofstream outf{ "output.s" };
     if (!outf) {
         std::cerr << "Uh oh, output.s could not be opened for writing!\n";

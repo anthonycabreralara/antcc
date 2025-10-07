@@ -1,9 +1,9 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 #include "ast.h"
-#include "ir.h"
+#include "asm_ir.h"
 
-std::unique_ptr<IRNode> generateCode(const Node* node);
-void printIR(const IRNode* node, int space);
+std::unique_ptr<AsmIRNode> generateCode(const Node* node);
+void printIR(const AsmIRNode* node, int space);
 
 #endif

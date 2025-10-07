@@ -1,9 +1,9 @@
 #include "codegen.h"
-#include "ir.h"
+#include "asm_ir.h"
 #include "ast.h"
 #include <iostream>
 
-std::unique_ptr<IRNode> generateCode(const Node* node) {
+std::unique_ptr<AsmIRNode> generateCode(const Node* node) {
     if (!node) return nullptr;
 
     switch (node->type) {
@@ -11,37 +11,36 @@ std::unique_ptr<IRNode> generateCode(const Node* node) {
             const auto* programNode = static_cast<const ProgramNode*>(node);
             auto func = generateCode(programNode->function.get());
 
-            return std::make_unique<IRProgram>(std::unique_ptr<IRFunction>(static_cast<IRFunction*>(func.release()))
+            return std::make_unique<AsmIRProgram>(std::unique_ptr<AsmIRFunction>(static_cast<AsmIRFunction*>(func.release()))
             );
         }
-
 
         case NodeType::FUNCTION: {
             const auto* functionNode = static_cast<const FunctionNode*>(node);
             auto instructions = generateCode(functionNode->statement.get());
 
-            return std::make_unique<IRFunction>(
+            return std::make_unique<AsmIRFunction>(
                 functionNode->name,
-                std::unique_ptr<IRInstructions>(static_cast<IRInstructions*>(instructions.release()))
+                std::unique_ptr<AsmIRInstructions>(static_cast<AsmIRInstructions*>(instructions.release()))
             );
         }
 
         case NodeType::RETURN: {
             const auto* returnNode = static_cast<const ReturnNode*>(node);
-            auto instructions = std::make_unique<IRInstructions>();
+            auto instructions = std::make_unique<AsmIRInstructions>();
 
             auto expr = generateCode(returnNode->expr.get());
-            auto dst  = std::make_unique<IRReg>("eax");
+            auto dst  = std::make_unique<AsmIRReg>("eax");
 
-            instructions->instructions.push_back(std::make_unique<IRMov>(std::move(expr), std::move(dst)));
-            instructions->instructions.push_back(std::make_unique<IRRet>());
+            instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(expr), std::move(dst)));
+            instructions->instructions.push_back(std::make_unique<AsmIRRet>());
 
             return instructions;
         }
 
         case NodeType::CONSTANT: {
             const auto* constantNode = static_cast<const ConstantNode*>(node);
-            return std::make_unique<IRImm>(constantNode->value);
+            return std::make_unique<AsmIRImm>(constantNode->value);
         }
 
         default:
@@ -55,16 +54,16 @@ void printSpace(int count) {
     }
 }
 
-void printIR(const IRNode* node, int space) {
+void printIR(const AsmIRNode* node, int space) {
     switch (node->type) {
-        case IRNodeType::PROGRAM: {
+        case AsmIRNodeType::PROGRAM: {
             std::cout << "program" << std::endl;
-            const auto* programNode = static_cast<const IRProgram*>(node);
+            const auto* programNode = static_cast<const AsmIRProgram*>(node);
             printIR(programNode->function.get(), space);
             break;
         }
-        case IRNodeType::FUNCTION: {
-            const auto* functionNode = static_cast<const IRFunction*>(node);
+        case AsmIRNodeType::FUNCTION: {
+            const auto* functionNode = static_cast<const AsmIRFunction*>(node);
             std::cout << "\t.global " << functionNode->name << std::endl;
             std::cout << functionNode->name << ":" << std::endl;
 
@@ -74,8 +73,8 @@ void printIR(const IRNode* node, int space) {
 
             break;
         }
-        case IRNodeType::MOV: {
-            const auto* moveNode = static_cast<const IRMov*>(node);
+        case AsmIRNodeType::MOV: {
+            const auto* moveNode = static_cast<const AsmIRMov*>(node);
             std::cout << "\tmovl ";
             printIR(moveNode->src.get(), space);
             std::cout << ", ";
@@ -83,17 +82,17 @@ void printIR(const IRNode* node, int space) {
             std::cout << std::endl;
             break;
         }
-        case IRNodeType::IMMEDIATE: {
-            const auto* immNode = static_cast<const IRImm*>(node);
+        case AsmIRNodeType::IMMEDIATE: {
+            const auto* immNode = static_cast<const AsmIRImm*>(node);
             std::cout << "$" << immNode->value;
             break;
         }
-        case IRNodeType::REGISTER: {
-            const auto* regNode = static_cast<const IRReg*>(node);
+        case AsmIRNodeType::REGISTER: {
+            const auto* regNode = static_cast<const AsmIRReg*>(node);
             std::cout << "%" << regNode->value;
             break;
         }
-        case IRNodeType::RETURN: {
+        case AsmIRNodeType::RETURN: {
             std::cout << "\tret" << std::endl;
             break;
         }
