@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "codegen.h"
+#include "generate_tacky.h"
 #include "asm_ir.h"
 #include "emitter.h"
 #include "ast.h"
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
         return 1;
     } else if (argc == 3) {
         option = argv[2];
-        if (option != "--lex" && option != "--parse" && option != "--codegen") {
+        if (option != "--lex" && option != "--parse" && option != "--codegen" && option != "--tacky") {
             std::cout << "Invalid options." << std::endl;
             return 1;
         }
@@ -64,14 +65,20 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    auto ir = generateCode(ast.get());
 
-    if (option == "--codegen") {
-        printIR(ir.get(), 0);
+    auto tacky_ir = generateTacky(ast.get());
+    if (option == "--tacky") {
+        printTacky(tacky_ir.get(), 0);
         return 0;
     }
 
-    emitCode(ir.get());
+    auto asm_ir = generateCode(ast.get());
+    if (option == "--codegen") {
+        printIR(asm_ir.get(), 0);
+        return 0;
+    }
+
+    emitCode(asm_ir.get());
 
 
 

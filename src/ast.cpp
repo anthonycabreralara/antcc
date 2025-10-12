@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "utils.h"
 #include <iostream>
 
 // -------- AST Node Constructors --------
@@ -32,12 +33,6 @@ ProgramNode::ProgramNode(std::unique_ptr<FunctionNode> func) {
 
 // -------- AST Printer --------
 
-void printTabs(int count) {
-    for (int i = 0; i < count; i++) {
-        std::cout << ' ';
-    }
-}
-
 void printAST(const Node* node, int count) {
     if (!node) return;
 
@@ -51,14 +46,14 @@ void printAST(const Node* node, int count) {
         }
         case NodeType::FUNCTION: {
             const FunctionNode* functionNode = static_cast<const FunctionNode*>(node);
-            printTabs(count);
+            printSpace(count);
             std::cout << "Function(" << std::endl;
-            printTabs(count + 3);
+            printSpace(count + 3);
             std::cout << "name=" << functionNode->name << std::endl;
-            printTabs(count + 3);
+            printSpace(count + 3);
             std::cout << "body=";
             printAST(functionNode->statement.get(), count + 3);
-            printTabs(count);
+            printSpace(count);
             std::cout << ")" << std::endl;
             break;
         }
@@ -66,22 +61,22 @@ void printAST(const Node* node, int count) {
             const ReturnNode* returnNode = static_cast<const ReturnNode*>(node);
             std::cout << "Return(" << std::endl;
             printAST(returnNode->expr.get(), count + 3);
-            printTabs(count);
+            printSpace(count);
             std::cout << ")" << std::endl;
             break;
         }
         case NodeType::CONSTANT: {
             const ConstantNode* constantNode = static_cast<const ConstantNode*>(node);
-            printTabs(count);
+            printSpace(count);
             std::cout << "Constant(" << constantNode->value << ")" << std::endl;
             break;
         }
         case NodeType::UNARY_OP: {
             const UnOpNode* unOpNode = static_cast<const UnOpNode*>(node);
-            printTabs(count);
+            printSpace(count);
             std::cout << "UnOp(" << unOpNode->op << ", " << std::endl;
             printAST(unOpNode->expr.get(), count + 3);
-            printTabs(count);
+            printSpace(count);
             std::cout << ")" << std::endl;
         }
     }

@@ -1,6 +1,7 @@
 #include "codegen.h"
 #include "asm_ir.h"
 #include "ast.h"
+#include "utils.h"
 #include <iostream>
 
 std::unique_ptr<AsmIRNode> generateCode(const Node* node) {
@@ -45,12 +46,6 @@ std::unique_ptr<AsmIRNode> generateCode(const Node* node) {
 
         default:
             return nullptr;
-    }
-}
-
-void printSpace(int count) {
-    for (int i = 0; i < count; i++) {
-        std::cout << ' ';
     }
 }
 
