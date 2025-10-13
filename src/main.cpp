@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    auto tacky_ir = generateTacky(ast.get());
+    auto tacky_ir = generateTacky(ast.get(), nullptr);
     if (option == "--tacky") {
         printTacky(tacky_ir.get(), 0);
         return 0;

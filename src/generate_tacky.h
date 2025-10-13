@@ -4,7 +4,7 @@
 #include "tacky_ir.h"
 #include "asm_ir.h"
 
-std::unique_ptr<TackyIRNode> generateTacky(const Node* node);
+std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions* instructions);
 void printTacky(const TackyIRNode* node, int count);
 
 #endif

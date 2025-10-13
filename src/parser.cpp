@@ -39,6 +39,16 @@ bool Parser::match(TokenType type) {
     return false;
 }
 
+std::unique_ptr<Node> Parser::getUnOp(std::string s) {
+    if (s == "-") {
+        return std::make_unique<Negate>();
+    } else if (s == "~") {
+        return std::make_unique<Complement>();
+    }
+
+    return nullptr;
+}
+
 std::unique_ptr<Node> Parser::parseExpression() {
     bool valid = true;
     if (check(TokenType::OPEN_PARENTHESIS)) {
@@ -52,8 +62,9 @@ std::unique_ptr<Node> Parser::parseExpression() {
         TokenType opType = tokens[current].type;
         std::string opValue = tokens[current].value;
         valid = valid && match(opType);
+        auto op = getUnOp(opValue);
         auto expression = parseExpression();
-        return std::make_unique<UnOpNode>(opValue, std::move(expression));
+        return std::make_unique<UnOpNode>(std::move(op), std::move(expression));
     }
     valid = valid && match(TokenType::CONSTANT);
     return std::make_unique<ConstantNode>(tokens[current - 1].value);

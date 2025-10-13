@@ -8,9 +8,17 @@ ReturnNode::ReturnNode(std::unique_ptr<Node> e) {
     expr = std::move(e);
 }
 
-UnOpNode::UnOpNode(std::string o, std::unique_ptr<Node> e) {
+Complement::Complement() {
+    type = NodeType::COMPLEMENT;
+}
+
+Negate::Negate() {
+    type = NodeType::NEGATE;
+}
+
+UnOpNode::UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e) {
     type = NodeType::UNARY_OP;
-    op = o;
+    op = std::move(o);
     expr = std::move(e);
 }
 
@@ -74,10 +82,21 @@ void printAST(const Node* node, int count) {
         case NodeType::UNARY_OP: {
             const UnOpNode* unOpNode = static_cast<const UnOpNode*>(node);
             printSpace(count);
-            std::cout << "UnOp(" << unOpNode->op << ", " << std::endl;
+            std::cout << "UnOp(";
+            printAST(unOpNode->op.get(), 0);
+            std::cout << ", " << std::endl;
             printAST(unOpNode->expr.get(), count + 3);
             printSpace(count);
             std::cout << ")" << std::endl;
+            break;
+        }
+        case NodeType::NEGATE: {
+            std::cout << "Negate";
+            break;
+        }
+        case NodeType::COMPLEMENT: {
+            std::cout << "Compliment";
+            break;
         }
     }
 }

@@ -12,6 +12,7 @@ private:
     int current = 0;
     std::vector<Token>& tokens;
 
+    std::unique_ptr<Node> getUnOp(std::string s);
     std::unique_ptr<Node> parseExpression();
     std::unique_ptr<Node> parseStatement();
     std::unique_ptr<ProgramNode> parseProgram();

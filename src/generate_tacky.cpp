@@ -3,13 +3,13 @@
 #include "ast.h"
 #include <iostream>
 
-std::unique_ptr<TackyIRNode> generateTacky(const Node* node) {
+std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions* instructions) {
     if (!node) return nullptr;
 
     switch (node->type) {
         case NodeType::PROGRAM: {
             const auto* programNode = static_cast<const ProgramNode*>(node);
-            auto func = generateTacky(programNode->function.get());
+            auto func = generateTacky(programNode->function.get(), nullptr);
 
             return std::make_unique<TackyIRProgram>(std::unique_ptr<TackyIRFunction>(static_cast<TackyIRFunction*>(func.release()))
             );
@@ -17,7 +17,7 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node) {
 
         case NodeType::FUNCTION: {
             const auto* functionNode = static_cast<const FunctionNode*>(node);
-            auto instructions = generateTacky(functionNode->statement.get());
+            auto instructions = generateTacky(functionNode->statement.get(), nullptr);
 
             return std::make_unique<TackyIRFunction>(
                 functionNode->name,
@@ -27,7 +27,12 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node) {
 
         case NodeType::RETURN: {
             const auto* returnNode = static_cast<const ReturnNode*>(node);
+            auto instructions = std::make_unique<TackyIRInstructions>();
             return nullptr;
+        }
+
+        case NodeType::UNARY_OP: {
+            const auto* unaryNode = static_cast<const UnOpNode*>(node);
         }
 
         case NodeType::CONSTANT: {

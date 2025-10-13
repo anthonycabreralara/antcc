@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, RETURN, CONSTANT };
+enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, RETURN, CONSTANT, NEGATE, COMPLEMENT };
 
 /*
 program = Program(function_declaration)
@@ -25,11 +25,21 @@ public:
     ReturnNode(std::unique_ptr<Node> e);
 };
 
+class Complement : public Node {
+public:
+    Complement();
+};
+
+class Negate : public Node {
+public:
+    Negate();
+};
+
 class UnOpNode : public Node {
 public:
-    std::string op;
+    std::unique_ptr<Node> op;
     std::unique_ptr<Node> expr;
-    UnOpNode(std::string o, std::unique_ptr<Node> e);
+    UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e);
 };
 
 class ConstantNode : public Node {
