@@ -3,6 +3,12 @@
 #include "ast.h"
 #include <iostream>
 
+int temporaryAddress = 0;
+
+std::string makeTemporary() {
+    return "tmp.o";
+}
+
 std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions* instructions) {
     if (!node) return nullptr;
 
@@ -27,17 +33,32 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
 
         case NodeType::RETURN: {
             const auto* returnNode = static_cast<const ReturnNode*>(node);
-            auto instructions = std::make_unique<TackyIRInstructions>();
+            auto inst = std::make_unique<TackyIRInstructions>();
+            auto ret = generateTacky(returnNode->expr.get(), nullptr);
             return nullptr;
         }
 
         case NodeType::UNARY_OP: {
             const auto* unaryNode = static_cast<const UnOpNode*>(node);
+            auto src = generateTacky(unaryNode->expr.get(), instructions);
+            auto dstName = makeTemporary();
+            auto dst = std::make_unique<TackyIRVar>(dstName);
+            auto tackyOp = generateTacky(unaryNode->op.get(), nullptr);
+            instructions->instructions.push_back(std::make_unique<TackyIRUnary>(std::move(tackyOp), std::move(src), std::move(dst)));
+            return nullptr;
         }
 
         case NodeType::CONSTANT: {
             const auto* constantNode = static_cast<const ConstantNode*>(node);
             return std::make_unique<TackyIRConstant>(constantNode->value);
+        }
+
+        case NodeType::NEGATE: {
+            return std::make_unique<TackyIRNegate>();
+        }
+
+        case NodeType::COMPLEMENT: {
+            return std::make_unique<TackyIRComplement>();
         }
 
         default:
