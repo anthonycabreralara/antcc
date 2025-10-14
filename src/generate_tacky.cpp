@@ -41,13 +41,25 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
 
         case NodeType::UNARY_OP: {
             const auto* unaryNode = static_cast<const UnOpNode*>(node);
+
             auto src = generateTacky(unaryNode->expr.get(), instructions);
-            auto dstName = makeTemporary();
-            auto dst = std::make_unique<TackyIRVar>(dstName);
+
+            std::string tempName = makeTemporary();
+            auto dst = std::make_unique<TackyIRVar>(tempName);
+
             auto tackyOp = generateTacky(unaryNode->op.get(), nullptr);
-            instructions->instructions.push_back(std::make_unique<TackyIRUnary>(std::move(tackyOp), std::move(src), std::move(dst)));
-            return std::unique_ptr<TackyIRNode>(std::move(dst));
+
+            instructions->instructions.push_back(
+                std::make_unique<TackyIRUnary>(
+                    std::move(tackyOp),
+                    std::move(src),
+                    std::move(dst)
+                )
+            );
+
+            return std::make_unique<TackyIRVar>(tempName);
         }
+
 
         case NodeType::CONSTANT: {
             const auto* constantNode = static_cast<const ConstantNode*>(node);
@@ -85,26 +97,57 @@ void printTacky(const TackyIRNode* node, int count) {
             printSpace(count + 3);
             std::cout << "name=" << functionNode->name << std::endl;
             printSpace(count + 3);
-            std::cout << "body=";
-            std::cout << "<SKIP>" << std::endl;
-            //printTacky(functionNode->statement.get(), count + 3);
+            std::cout << "body=[" << std::endl;
+            for (const auto& instructionNode : functionNode->instructions->instructions) {
+                printTacky(instructionNode.get(), count + 6);
+            }
+            printSpace(count + 3);
+            std::cout << "]" << std::endl;
             printSpace(count);
             std::cout << ")" << std::endl;
             break;
         }
+        case TackyIRNodeType::UNARY: {
+            const TackyIRUnary* unaryNode = static_cast<const TackyIRUnary*>(node);
+            printSpace(count);
+            std::cout << "Unary(";
+            printTacky(unaryNode->op.get(), 0);
+            std::cout << ", ";
+            printTacky(unaryNode->src.get(), 0);
+            std::cout << ", ";
+            printTacky(unaryNode->dst.get(), 0);
+            std::cout << ")" << std::endl;
+            break;
+        }
+        case TackyIRNodeType::VAR: {
+            const TackyIRVar* varNode = static_cast<const TackyIRVar*>(node);
+            std::cout << "Var(\"" << varNode->value << "\")";
+            break;
+        }
+        case TackyIRNodeType::NEGATE: {
+            std::cout << "Negate";
+            break;
+        }
+        case TackyIRNodeType::COMPLEMENT: {
+            std::cout << "Complement";
+            break;
+        }
         case TackyIRNodeType::RETURN: {
             const TackyIRReturn* returnNode = static_cast<const TackyIRReturn*>(node);
-            std::cout << "Return(" << std::endl;
-            //printTacky(returnNode->expr.get(), count + 3);
-            //printSpace(count);
+            printSpace(count);
+            std::cout << "Return("; 
+            printTacky(returnNode->expr.get(), 0);
             std::cout << ")" << std::endl;
             break;
         }
         case TackyIRNodeType::CONSTANT: {
             const TackyIRConstant* constantNode = static_cast<const TackyIRConstant*>(node);
-            printSpace(count);
-            std::cout << "Constant(" << constantNode->value << ")" << std::endl;
+            std::cout << "Constant(" << constantNode->value << ")";
             break;
         }
+        default:
+            printSpace(count);
+            std::cout << "SKIP" << std::endl;
+            break;
     }
 }

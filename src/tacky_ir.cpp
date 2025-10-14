@@ -37,6 +37,7 @@ TackyIRVar::TackyIRVar(std::string v) {
 }
 
 TackyIRUnary::TackyIRUnary(std::unique_ptr<TackyIRNode> o, std::unique_ptr<TackyIRNode> s, std::unique_ptr<TackyIRNode> d) {
+    type = TackyIRNodeType::UNARY;
     op = std::move(o);
     src = std::move(s);
     dst = std::move(d);
