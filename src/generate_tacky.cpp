@@ -6,7 +6,7 @@
 int temporaryAddress = 0;
 
 std::string makeTemporary() {
-    return "tmp.o";
+    return "tmp" + std::to_string(temporaryAddress++) + ".o";
 }
 
 std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions* instructions) {
@@ -15,27 +15,28 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
     switch (node->type) {
         case NodeType::PROGRAM: {
             const auto* programNode = static_cast<const ProgramNode*>(node);
-            auto func = generateTacky(programNode->function.get(), nullptr);
-
-            return std::make_unique<TackyIRProgram>(std::unique_ptr<TackyIRFunction>(static_cast<TackyIRFunction*>(func.release()))
+            auto funcNode = generateTacky(programNode->function.get(), nullptr);
+            return std::make_unique<TackyIRProgram>(
+                std::unique_ptr<TackyIRFunction>(static_cast<TackyIRFunction*>(funcNode.release()))
             );
         }
 
         case NodeType::FUNCTION: {
             const auto* functionNode = static_cast<const FunctionNode*>(node);
-            auto instructions = generateTacky(functionNode->statement.get(), nullptr);
+            auto inst = std::make_unique<TackyIRInstructions>();
+            auto ret = generateTacky(functionNode->statement.get(), inst.get());
+            inst->instructions.push_back(std::move(ret));
 
             return std::make_unique<TackyIRFunction>(
                 functionNode->name,
-                std::unique_ptr<TackyIRInstructions>(static_cast<TackyIRInstructions*>(instructions.release()))
+                std::unique_ptr<TackyIRInstructions>(static_cast<TackyIRInstructions*>(inst.release()))
             );
         }
 
         case NodeType::RETURN: {
             const auto* returnNode = static_cast<const ReturnNode*>(node);
-            auto inst = std::make_unique<TackyIRInstructions>();
-            auto ret = generateTacky(returnNode->expr.get(), nullptr);
-            return nullptr;
+            auto ret = generateTacky(returnNode->expr.get(), instructions);
+            return std::make_unique<TackyIRReturn>(std::move(ret));
         }
 
         case NodeType::UNARY_OP: {
@@ -45,7 +46,7 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
             auto dst = std::make_unique<TackyIRVar>(dstName);
             auto tackyOp = generateTacky(unaryNode->op.get(), nullptr);
             instructions->instructions.push_back(std::make_unique<TackyIRUnary>(std::move(tackyOp), std::move(src), std::move(dst)));
-            return nullptr;
+            return std::unique_ptr<TackyIRNode>(std::move(dst));
         }
 
         case NodeType::CONSTANT: {
