@@ -54,6 +54,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    if (!lexer.isValid()) {
+        std::cout << "Invalid source code." << std::endl;
+        return 1;
+    }
+
     Parser parser(tokens);
     auto ast = parser.parse();  // unique_ptr<Node>
 

@@ -3,7 +3,7 @@
 
 Token::Token(TokenType t, const std::string& v) : type(t), value(v) {}
 
-Lexer::Lexer(const std::string& source) : input(source), position(0) {
+Lexer::Lexer(const std::string& source) : input(source), position(0), valid(true) {
     initKeywords();
 }
 
@@ -88,17 +88,22 @@ std::vector<Token> Lexer::tokenize() {
                     } else {
                         tokens.emplace_back(TokenType::NEGATION, "-"); break;
                     }
-                
+
             }
             position++;
         }
         else {
             tokens.emplace_back(TokenType::UNKNOWN, std::string(1, currentChar));
+            valid = false;
             position++;
         }
     }
 
     return tokens;
+}
+
+bool Lexer::isValid() const {
+    return valid;
 }
 
 std::string getTokenTypeName(TokenType type) {
