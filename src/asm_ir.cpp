@@ -1,5 +1,4 @@
 #include "asm_ir.h"
-#include <vector>
 #include <memory>
 
 // -------- AsmIR Node Constructors --------

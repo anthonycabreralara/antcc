@@ -2,7 +2,6 @@
 #include "ast.h"
 #include "lexer.h"
 #include <memory>
-#include <iostream>
 #include <vector>
 
 /*
@@ -68,7 +67,7 @@ std::unique_ptr<Node> Parser::parseExpression() {
     }
     valid = valid && match(TokenType::CONSTANT);
     return std::make_unique<ConstantNode>(tokens[current - 1].value);
-    
+
 }
 
 std::unique_ptr<Node> Parser::parseStatement() {
@@ -89,7 +88,7 @@ std::unique_ptr<FunctionNode> Parser::parseFunction() {
         valid = valid && match(TokenType::INT_KEYWORD);
     }
     valid = valid && match(TokenType::IDENTIFIER);
-    name = tokens[current - 1].value; 
+    name = tokens[current - 1].value;
 
     valid = valid && match(TokenType::OPEN_PARENTHESIS);
     valid = valid && match(TokenType::VOID_KEYWORD);

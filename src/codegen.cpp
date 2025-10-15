@@ -1,7 +1,6 @@
 #include "codegen.h"
 #include "asm_ir.h"
 #include "ast.h"
-#include "utils.h"
 #include <iostream>
 
 std::unique_ptr<AsmIRNode> generateCode(const Node* node) {

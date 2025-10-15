@@ -1,4 +1,3 @@
-#include "codegen.h"
 #include "tacky_ir.h"
 #include "ast.h"
 #include <iostream>
@@ -135,7 +134,7 @@ void printTacky(const TackyIRNode* node, int count) {
         case TackyIRNodeType::RETURN: {
             const TackyIRReturn* returnNode = static_cast<const TackyIRReturn*>(node);
             printSpace(count);
-            std::cout << "Return("; 
+            std::cout << "Return(";
             printTacky(returnNode->expr.get(), 0);
             std::cout << ")" << std::endl;
             break;

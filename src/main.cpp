@@ -2,12 +2,9 @@
 #include "parser.h"
 #include "codegen.h"
 #include "generate_tacky.h"
-#include "asm_ir.h"
 #include "emitter.h"
 #include "ast.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <stdexcept>
 #include <cstdio>
