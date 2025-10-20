@@ -6,6 +6,7 @@
 #include "ast.h"
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <stdexcept>
 #include <cstdio>
 #include <memory>
@@ -28,24 +29,35 @@ std::string readFileToString(const std::string &filename) {
 
 int main(int argc, char *argv[]) {
     std::string option = "";
-    if (argc < 2) {
-        std::cout << "Need filepath." << std::endl;
-        return 1;
-    } else if (argc > 3) {
+    std::string sourceCode;
+
+    // Case 1: Read from stdin (no filepath argument)
+    if (argc == 1) {
+        std::ostringstream ss;
+        ss << std::cin.rdbuf();  // read all of stdin into string
+        sourceCode = ss.str();
+    }
+    // Case 2: Filepath only or with option
+    else if (argc == 2 || argc == 3) {
+        std::string sourceCodeFilepath = argv[1];
+
+        if (argc == 3) {
+            option = argv[2];
+            if (option != "--lex" && option != "--parse" && option != "--codegen" && option != "--tacky") {
+                std::cout << "Invalid options." << std::endl;
+                return 1;
+            }
+        }
+
+        sourceCode = readFileToString(sourceCodeFilepath);
+    }
+    // Too many args
+    else {
         std::cout << "Too many arguments." << std::endl;
         return 1;
-    } else if (argc == 3) {
-        option = argv[2];
-        if (option != "--lex" && option != "--parse" && option != "--codegen" && option != "--tacky") {
-            std::cout << "Invalid options." << std::endl;
-            return 1;
-        }
     }
 
-    std::string sourceCodeFilepath = argv[1];
-
-    std::string sourceCode = readFileToString(sourceCodeFilepath);
-
+    // --- Compiler pipeline ---
     Lexer lexer(sourceCode);
     std::vector<Token> tokens = lexer.tokenize();
 
@@ -54,19 +66,13 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    if (!lexer.isValid()) {
-        std::cout << "Invalid source code." << std::endl;
-        return 1;
-    }
-
     Parser parser(tokens);
-    auto ast = parser.parse();  // unique_ptr<Node>
+    auto ast = parser.parse();
 
     if (option == "--parse") {
-        printAST(ast.get(), 0);  // pass raw pointer for printing
+        printAST(ast.get(), 0);
         return 0;
     }
-
 
     auto tacky_ir = generateTacky(ast.get(), nullptr);
     if (option == "--tacky") {
@@ -74,17 +80,16 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    auto asm_ir = generateCode(ast.get());
+    
+    auto asm_ir = generateCode(tacky_ir.get(), nullptr);
     if (option == "--codegen") {
         printIR(asm_ir.get(), 0);
         return 0;
     }
 
-    emitCode(asm_ir.get());
-
-
-
-
+    //emitCode(asm_ir.get());
+    
 
     return 0;
 }
+
