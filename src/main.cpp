@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    //emitCode(asm_ir.get());
+    emitCode(asm_ir.get());
     
 
     return 0;
