@@ -27,6 +27,18 @@ std::string readFileToString(const std::string &filename) {
     return result;
 }
 
+void compileAsmFile(const std::string& filename) {
+    std::string cmd = "gcc " + filename + ".s -o " + filename;
+
+    int result = system(cmd.c_str());
+
+    if (result == 0) {
+        std::cout << "Compilation succeeded.\n";
+    } else {
+        std::cout << "Compilation failed with code " << result << ".\n";
+    }
+}
+
 std::string getFileName(const std::string filename) {
     std::string segment;
     std::vector<std::string> segments;
@@ -108,6 +120,7 @@ int main(int argc, char *argv[]) {
     }
 
     emitCode(asm_ir.get(), filename);
+    compileAsmFile(filename);
     
 
     return 0;
