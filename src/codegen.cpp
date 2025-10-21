@@ -25,14 +25,14 @@ std::unique_ptr<AsmIRInstructions> unnestInstructions(std::unique_ptr<AsmIRInstr
     return flat;
 }
 
-// --- Generate Asm IR ---
-std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructions* instructions) {
+// --- 1st Asm IR Pass---
+std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructions* instructions) {
     if (!node) return nullptr;
 
     switch (node->type) {
         case TackyIRNodeType::PROGRAM: {
             const auto* programNode = static_cast<const TackyIRProgram*>(node);
-            auto func = generateCode(programNode->function.get(), nullptr);
+            auto func = buildAsmIRAst(programNode->function.get(), nullptr);
             return std::make_unique<AsmIRProgram>(
                 std::unique_ptr<AsmIRFunction>(static_cast<AsmIRFunction*>(func.release()))
             );
@@ -43,7 +43,7 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructio
             auto asmFunctionInstructions = std::make_unique<AsmIRInstructions>();
 
             for (const auto& instructionNode : functionNode->instructions->instructions) {
-                generateCode(instructionNode.get(), asmFunctionInstructions.get());
+                buildAsmIRAst(instructionNode.get(), asmFunctionInstructions.get());
             }
 
             auto flattened = unnestInstructions(std::move(asmFunctionInstructions));
@@ -52,7 +52,7 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructio
 
         case TackyIRNodeType::RETURN: {
             const auto* returnNode = static_cast<const TackyIRReturn*>(node);
-            auto expr = generateCode(returnNode->expr.get(), nullptr);
+            auto expr = buildAsmIRAst(returnNode->expr.get(), nullptr);
             auto dst = std::make_unique<AsmIRReg>("AX");
 
             if (instructions) {
@@ -65,10 +65,10 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructio
 
         case TackyIRNodeType::UNARY: {
             const auto* unaryNode = static_cast<const TackyIRUnary*>(node);
-            auto unaryOperator = generateCode(unaryNode->op.get(), nullptr);
-            auto src = generateCode(unaryNode->src.get(), nullptr);
-            auto dst_1 = generateCode(unaryNode->dst.get(), nullptr);
-            auto dst_2 = generateCode(unaryNode->dst.get(), nullptr);
+            auto unaryOperator = buildAsmIRAst(unaryNode->op.get(), nullptr);
+            auto src = buildAsmIRAst(unaryNode->src.get(), nullptr);
+            auto dst_1 = buildAsmIRAst(unaryNode->dst.get(), nullptr);
+            auto dst_2 = buildAsmIRAst(unaryNode->dst.get(), nullptr);
 
             if (instructions) {
                 instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(src), std::move(dst_1)));
@@ -159,6 +159,16 @@ void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& ps
         default:
             break;
     }
+}
+
+// --- Generate Asm IR ---
+std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node) {
+    auto asm_ir = buildAsmIRAst(node, nullptr);
+    std::unordered_map<std::string, int> pseudoToOffset;
+    int nextOffset = -4;
+
+    replacePseudoLoop(asm_ir.get(), pseudoToOffset, nextOffset);
+    return std::move(asm_ir);
 }
 
 // --- Pretty IR Printer ---

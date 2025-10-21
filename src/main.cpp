@@ -81,11 +81,7 @@ int main(int argc, char *argv[]) {
     }
 
     
-    auto asm_ir = generateCode(tacky_ir.get(), nullptr);
-    std::unordered_map<std::string, int> pseudoToOffset;
-    int nextOffset = -4;
-
-    replacePseudoLoop(asm_ir.get(), pseudoToOffset, nextOffset);
+    auto asm_ir = generateCode(tacky_ir.get());
     if (option == "--codegen") {
         printIR(asm_ir.get(), 0);
         return 0;
