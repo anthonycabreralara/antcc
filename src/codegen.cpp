@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 // --- Flatten nested AsmIRInstructions ---
-std::unique_ptr<AsmIRInstructions> unnestInstructions(std::unique_ptr<AsmIRInstructions> node) {
+std::unique_ptr<AsmIRInstructions> passUnnest(std::unique_ptr<AsmIRInstructions> node) {
     auto flat = std::make_unique<AsmIRInstructions>();
     if (!node) return flat;
 
@@ -14,7 +14,7 @@ std::unique_ptr<AsmIRInstructions> unnestInstructions(std::unique_ptr<AsmIRInstr
 
         if (instr->type == AsmIRNodeType::INSTRUCTIONS) {
             auto nested = static_cast<AsmIRInstructions*>(instr.release());
-            auto nestedFlat = unnestInstructions(std::unique_ptr<AsmIRInstructions>(nested));
+            auto nestedFlat = passUnnest(std::unique_ptr<AsmIRInstructions>(nested));
             for (auto& nestedInstr : nestedFlat->instructions)
                 flat->instructions.push_back(std::move(nestedInstr));
         } else {
@@ -46,7 +46,7 @@ std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructi
                 buildAsmIRAst(instructionNode.get(), asmFunctionInstructions.get());
             }
 
-            auto flattened = unnestInstructions(std::move(asmFunctionInstructions));
+            auto flattened = passUnnest(std::move(asmFunctionInstructions));
             return std::make_unique<AsmIRFunction>(functionNode->name, std::move(flattened));
         }
 
@@ -94,13 +94,13 @@ std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructi
     }
 }
 
-void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& pseudoToOffset, int& nextOffset) {
+void passReplacePseudos(AsmIRNode* node, std::unordered_map<std::string, int>& pseudoToOffset, int& nextOffset) {
     if (!node) return;
 
     switch (node->type) {
         case AsmIRNodeType::PROGRAM: {
             auto* programNode = static_cast<AsmIRProgram*>(node);
-            replacePseudoLoop(programNode->function.get(), pseudoToOffset, nextOffset);
+            passReplacePseudos(programNode->function.get(), pseudoToOffset, nextOffset);
             break;
         }
 
@@ -108,7 +108,7 @@ void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& ps
             auto* fn = static_cast<AsmIRFunction*>(node);
             if (fn->instructions) {
                 for (auto& instr : fn->instructions->instructions) {
-                    replacePseudoLoop(instr.get(), pseudoToOffset, nextOffset);
+                    passReplacePseudos(instr.get(), pseudoToOffset, nextOffset);
                 }
             }
             break;
@@ -161,13 +161,98 @@ void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& ps
     }
 }
 
+std::unique_ptr<AsmIRNode> passFixMoves(std::unique_ptr<AsmIRNode> node, AsmIRInstructions* instructions, int& nextOffset) {
+    if (!node) return nullptr;
+
+    switch (node->type) {
+        case AsmIRNodeType::PROGRAM: {
+            auto* programNode = static_cast<AsmIRProgram*>(node.get());
+            auto newFn = passFixMoves(std::move(programNode->function), nullptr, nextOffset);
+            programNode->function = std::unique_ptr<AsmIRFunction>(
+                static_cast<AsmIRFunction*>(newFn.release())
+            );
+            return node;
+        }
+
+        case AsmIRNodeType::FUNCTION: {
+            auto* fn = static_cast<AsmIRFunction*>(node.get());
+            auto asmFunctionInstructions = std::make_unique<AsmIRInstructions>();
+
+            if (fn->instructions) {
+                auto &oldVec = fn->instructions->instructions;
+                std::vector<std::unique_ptr<AsmIRNode>> newVec;
+                newVec.reserve(oldVec.size());
+
+                asmFunctionInstructions->instructions.push_back(
+                    std::make_unique<AsmIRAllocateStack>(-(nextOffset + 4))
+                );
+
+                for (auto &oldInstr : oldVec) {
+                    std::unique_ptr<AsmIRNode> taken = std::move(oldInstr);
+                    std::unique_ptr<AsmIRNode> processed = passFixMoves(std::move(taken), asmFunctionInstructions.get(), nextOffset);
+                    if (processed) {
+                        newVec.push_back(std::move(processed));
+                    }
+                }
+
+                fn->instructions = std::move(asmFunctionInstructions);
+                for (auto &n : newVec)
+                    fn->instructions->instructions.push_back(std::move(n));
+            }
+
+            return node;
+        }
+
+        case AsmIRNodeType::MOV: {
+            auto* move = static_cast<AsmIRMov*>(node.get());
+
+            if (move->src->type == AsmIRNodeType::STACK &&
+                move->dst->type == AsmIRNodeType::STACK) {
+                auto src = std::move(move->src);
+                auto dst = std::move(move->dst);
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(src), std::make_unique<AsmIRReg>("R10")));
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::make_unique<AsmIRReg>("R10"), std::move(dst)));
+                return nullptr;
+            } else {
+                if (instructions) {
+                    instructions->instructions.push_back(std::move(node));
+                    return nullptr;
+                } else {
+                    return node;
+                }
+            }
+        }
+
+        case AsmIRNodeType::UNARY: {
+            if (instructions) {
+                instructions->instructions.push_back(std::move(node));
+                return nullptr;
+            }
+            return node;
+        }
+
+        case AsmIRNodeType::RETURN: {
+            if (instructions) {
+                instructions->instructions.push_back(std::move(node));
+                return nullptr;
+            }
+            return node;
+        }
+
+        default:
+            return node;
+    }
+}
+
+
 // --- Generate Asm IR ---
 std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node) {
     auto asm_ir = buildAsmIRAst(node, nullptr);
     std::unordered_map<std::string, int> pseudoToOffset;
     int nextOffset = -4;
 
-    replacePseudoLoop(asm_ir.get(), pseudoToOffset, nextOffset);
+    passReplacePseudos(asm_ir.get(), pseudoToOffset, nextOffset);
+    asm_ir = passFixMoves(std::move(asm_ir), nullptr, nextOffset);
     return std::move(asm_ir);
 }
 
@@ -220,7 +305,7 @@ void printIR(const AsmIRNode* node, int space = 0) {
             break;
         }
         case AsmIRNodeType::RETURN: {
-            std::cout << indent << "Return()\n";
+            std::cout << indent << "Return()" << std::endl;
             break;
         }
         case AsmIRNodeType::UNARY: {
@@ -232,9 +317,14 @@ void printIR(const AsmIRNode* node, int space = 0) {
             std::cout << ")\n";
             break;
         }
+        case AsmIRNodeType::ALLOCATE_STACK: {
+            const auto* allocateStackNode = static_cast<const AsmIRAllocateStack*>(node);
+            std::cout << indent << "AllocateStack(" << std::to_string(allocateStackNode->stack_size) << ")" << std::endl;
+            break;
+        }
         case AsmIRNodeType::STACK: {
             const auto* stackNode = static_cast<const AsmIRStack*>(node);
-            std::cout << "STACK(" << std::to_string(stackNode->stack_size) << ")";
+            std::cout << "Stack(" << std::to_string(stackNode->stack_size) << ")";
             break;
         }
         case AsmIRNodeType::NOT: {
@@ -246,7 +336,7 @@ void printIR(const AsmIRNode* node, int space = 0) {
             break;
         }
         default:
-            std::cout << indent << "UnknownNode(type=" << static_cast<int>(node->type) << ")\n";
+            std::cout << indent << "UnknownNode(type=" << static_cast<int>(node->type) << std::endl;
             break;
     }
 }
