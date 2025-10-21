@@ -2,6 +2,7 @@
 #include "asm_ir.h"
 #include "tacky_ir.h"
 #include <iostream>
+#include <unordered_map>
 
 // --- Flatten nested AsmIRInstructions ---
 std::unique_ptr<AsmIRInstructions> unnestInstructions(std::unique_ptr<AsmIRInstructions> node) {
@@ -52,7 +53,7 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructio
         case TackyIRNodeType::RETURN: {
             const auto* returnNode = static_cast<const TackyIRReturn*>(node);
             auto expr = generateCode(returnNode->expr.get(), nullptr);
-            auto dst = std::make_unique<AsmIRReg>("eax");
+            auto dst = std::make_unique<AsmIRReg>("AX");
 
             if (instructions) {
                 instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(expr), std::move(dst)));
@@ -90,6 +91,73 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructio
 
         default:
             return nullptr;
+    }
+}
+
+void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& pseudoToOffset, int& nextOffset) {
+    if (!node) return;
+
+    switch (node->type) {
+        case AsmIRNodeType::PROGRAM: {
+            auto* programNode = static_cast<AsmIRProgram*>(node);
+            replacePseudoLoop(programNode->function.get(), pseudoToOffset, nextOffset);
+            break;
+        }
+
+        case AsmIRNodeType::FUNCTION: {
+            auto* fn = static_cast<AsmIRFunction*>(node);
+            if (fn->instructions) {
+                for (auto& instr : fn->instructions->instructions) {
+                    replacePseudoLoop(instr.get(), pseudoToOffset, nextOffset);
+                }
+            }
+            break;
+        }
+
+        case AsmIRNodeType::MOV: {
+            auto* move = static_cast<AsmIRMov*>(node);
+
+            // source
+            if (move->src->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(move->src.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                move->src = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+
+            // destination
+            if (move->dst->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(move->dst.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                move->dst = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            break;
+        }
+
+        case AsmIRNodeType::UNARY: {
+            auto* unary = static_cast<AsmIRUnary*>(node);
+            if (unary->operand->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(unary->operand.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                unary->operand = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            break;
+        }
+
+
+        default:
+            break;
     }
 }
 
@@ -132,7 +200,8 @@ void printIR(const AsmIRNode* node, int space = 0) {
             break;
         }
         case AsmIRNodeType::PSEUDO: {
-            std::cout << "Pseudo()";
+            const auto* pseudoNode = static_cast<const AsmIRPseudo*>(node);
+            std::cout << "Pseudo(" << pseudoNode->identifier << ")";
             break;
         }
         case AsmIRNodeType::REGISTER: {
@@ -140,12 +209,32 @@ void printIR(const AsmIRNode* node, int space = 0) {
             std::cout << "Register(" << regNode->value << ")";
             break;
         }
-        case AsmIRNodeType::RETURN:
+        case AsmIRNodeType::RETURN: {
             std::cout << indent << "Return()\n";
             break;
-        case AsmIRNodeType::UNARY:
-            std::cout << indent << "Unary()\n";
+        }
+        case AsmIRNodeType::UNARY: {
+            const auto* unaryNode = static_cast<const AsmIRUnary*>(node);
+            std::cout << indent << "Unary(";
+            printIR(unaryNode->unary_operator.get(), 0);
+            std::cout << ", ";
+            printIR(unaryNode->operand.get(), 0);
+            std::cout << ")\n";
             break;
+        }
+        case AsmIRNodeType::STACK: {
+            const auto* stackNode = static_cast<const AsmIRStack*>(node);
+            std::cout << "STACK(" << std::to_string(stackNode->stack_size) << ")";
+            break;
+        }
+        case AsmIRNodeType::NOT: {
+            std::cout << "Not()";
+            break;
+        }
+        case AsmIRNodeType::NEG: {
+            std::cout << "Neg()";
+            break;
+        }
         default:
             std::cout << indent << "UnknownNode(type=" << static_cast<int>(node->type) << ")\n";
             break;

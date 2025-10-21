@@ -2,9 +2,10 @@
 #define CODEGEN_H
 #include "tacky_ir.h"
 #include "asm_ir.h"
+#include <unordered_map>
 
 std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node, AsmIRInstructions* instructions);
 void printIR(const AsmIRNode* node, int space);
 std::unique_ptr<AsmIRInstructions> unnestInstructions(std::unique_ptr<AsmIRInstructions> node);
-
+void replacePseudoLoop(AsmIRNode* node, std::unordered_map<std::string, int>& pseudoToOffset, int& nextOffset);
 #endif
