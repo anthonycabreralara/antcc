@@ -3,6 +3,6 @@
 #include "asm_ir.h"
 #include <memory>
 
-void emitCode(const AsmIRNode* node);
+void emitCode(const AsmIRNode* node, std::string filename);
 
 #endif

@@ -27,9 +27,28 @@ std::string readFileToString(const std::string &filename) {
     return result;
 }
 
+std::string getFileName(const std::string filename) {
+    std::string segment;
+    std::vector<std::string> segments;
+    std::istringstream ss(filename); // Create a stringstream from the input string
+
+    while (std::getline(ss, segment, '/')) { // Read segments separated by ','
+        segments.push_back(segment);
+    }
+    
+    std::string res = segments[segments.size() - 1];
+    
+    if (res.size() >= 2 && res.substr(res.size() - 2) == ".c") {
+        res = res.substr(0, res.size() - 2);
+    }
+
+    return res;
+}
+
 int main(int argc, char *argv[]) {
     std::string option = "";
     std::string sourceCode;
+    std::string filename = "";
 
     // Case 1: Read from stdin (no filepath argument)
     if (argc == 1) {
@@ -50,6 +69,7 @@ int main(int argc, char *argv[]) {
         }
 
         sourceCode = readFileToString(sourceCodeFilepath);
+        filename = getFileName(sourceCodeFilepath);
     }
     // Too many args
     else {
@@ -87,7 +107,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    emitCode(asm_ir.get());
+    emitCode(asm_ir.get(), filename);
     
 
     return 0;

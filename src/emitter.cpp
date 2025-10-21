@@ -85,8 +85,8 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
     }
 }
 
-void emitCode(const AsmIRNode* node) {
-    std::ofstream outf{ "output.s" };
+void emitCode(const AsmIRNode* node, std::string filename) {
+    std::ofstream outf{ filename + ".s" };
     if (!outf) {
         std::cerr << "Uh oh, output.s could not be opened for writing!\n";
         return;
