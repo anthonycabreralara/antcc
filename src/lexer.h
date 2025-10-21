@@ -21,6 +21,10 @@ enum class TokenType {
     BITWISE_COMPLEMENT, // ~
     DECREMENT, // ~
     LOGICAL_NEGATION, // !
+    ADD,
+    MULTIPLY,
+    DIVIDE,
+    REMAINDER,
     UNKNOWN
 };
 

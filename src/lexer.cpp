@@ -71,7 +71,9 @@ std::vector<Token> Lexer::tokenize() {
         else if (currentChar == '(' || currentChar == ')' ||
                  currentChar == '{' || currentChar == '}' ||
                  currentChar == ';' || currentChar == '-' ||
-                 currentChar == '~' || currentChar == '!') {
+                 currentChar == '~' || currentChar == '!' ||
+                 currentChar == '+' || currentChar == '*' ||
+                 currentChar == '%') {
             switch (currentChar) {
                 case '(': tokens.emplace_back(TokenType::OPEN_PARENTHESIS, "("); break;
                 case ')': tokens.emplace_back(TokenType::CLOSE_PARENTHESIS, ")"); break;
@@ -88,6 +90,9 @@ std::vector<Token> Lexer::tokenize() {
                     } else {
                         tokens.emplace_back(TokenType::NEGATION, "-"); break;
                     }
+                case '+' : tokens.emplace_back(TokenType::ADD, "+"); break;
+                case '*' : tokens.emplace_back(TokenType::MULTIPLY, "*"); break;
+                case '%' : tokens.emplace_back(TokenType::REMAINDER, "%"); break;
 
             }
             position++;
@@ -122,6 +127,10 @@ std::string getTokenTypeName(TokenType type) {
         case TokenType::DECREMENT: return "DECREMENT";
         case TokenType::BITWISE_COMPLEMENT: return "BITWISE_COMPLIMENT";
         case TokenType::LOGICAL_NEGATION: return "LOGICAL_NEGATION";
+        case TokenType::ADD: return "ADD";
+        case TokenType::MULTIPLY: return "MULTIPLY";
+        case TokenType::DIVIDE: return "DIVIDE";
+        case TokenType::REMAINDER: return "REMAINDER";
         case TokenType::UNKNOWN: return "UNKNOWN";
     }
     return "UNKNOWN";
