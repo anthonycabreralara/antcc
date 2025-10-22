@@ -22,6 +22,31 @@ UnOpNode::UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e) {
     expr = std::move(e);
 }
 
+BinaryNode::BinaryNode(std::unique_ptr<Node> binaryOperator, std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2) 
+    : binaryOperator(std::move(binaryOperator)), expression1(std::move(expression1)), expression2(std::move(expression2)) {
+    type = NodeType::BINARY;
+}
+
+AddNode::AddNode() {
+    type = NodeType::ADD;
+}
+
+SubtractNode::SubtractNode() {
+    type = NodeType::SUBTRACT;
+}
+
+MultiplyNode::MultiplyNode() {
+    type = NodeType::MULTIPLY;
+}
+
+DivideNode::DivideNode() {
+    type = NodeType::DIVIDE;
+}
+
+RemainderNode::RemainderNode() {
+    type = NodeType::REMAINDER;
+}
+
 ConstantNode::ConstantNode(std::string v) {
     type = NodeType::CONSTANT;
     value = std::move(v);

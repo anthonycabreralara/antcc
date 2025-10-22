@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, RETURN, CONSTANT, NEGATE, COMPLEMENT };
+enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, BINARY, RETURN, CONSTANT, NEGATE, COMPLEMENT, ADD, SUBTRACT, MULTIPLY, DIVIDE, REMAINDER };
 
 /*
 program = Program(function_declaration)
@@ -40,6 +40,33 @@ public:
     std::unique_ptr<Node> op;
     std::unique_ptr<Node> expr;
     UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e);
+};
+
+class BinaryNode : public Node {
+    std::unique_ptr<Node> binaryOperator;
+    std::unique_ptr<Node> expression1;
+    std::unique_ptr<Node> expression2;
+    BinaryNode(std::unique_ptr<Node> binaryOperator, std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2);
+};
+
+class AddNode : public Node {
+    AddNode();
+};
+
+class SubtractNode : public Node {
+    SubtractNode();
+};
+
+class MultiplyNode : public Node {
+    MultiplyNode();
+};
+
+class DivideNode : public Node {
+    DivideNode();
+};
+
+class RemainderNode : public Node {
+    RemainderNode();
 };
 
 class ConstantNode : public Node {
