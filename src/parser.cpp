@@ -57,6 +57,12 @@ std::unique_ptr<Node> Parser::getBinOp(std::string s) {
         return std::make_unique<AddNode>();
     } else if (s == "-") {
         return std::make_unique<SubtractNode>();
+    } else if (s == "*") {
+        return std::make_unique<MultiplyNode>();
+    } else if (s == "/") {
+        return std::make_unique<DivideNode>();
+    } else if (s == "%") {
+        return std::make_unique<RemainderNode>();
     }
 
     return nullptr;
