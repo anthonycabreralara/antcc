@@ -86,6 +86,7 @@ void printAST(const Node* node, int count) {
             printSpace(count + 3);
             std::cout << "body=";
             printAST(functionNode->statement.get(), count + 3);
+            std::cout << std::endl;
             printSpace(count);
             std::cout << ")" << std::endl;
             break;
@@ -94,14 +95,15 @@ void printAST(const Node* node, int count) {
             const ReturnNode* returnNode = static_cast<const ReturnNode*>(node);
             std::cout << "Return(" << std::endl;
             printAST(returnNode->expr.get(), count + 3);
+            std::cout << std::endl;
             printSpace(count);
-            std::cout << ")" << std::endl;
+            std::cout << ")";
             break;
         }
         case NodeType::CONSTANT: {
             const ConstantNode* constantNode = static_cast<const ConstantNode*>(node);
             printSpace(count);
-            std::cout << "Constant(" << constantNode->value << ")" << std::endl;
+            std::cout << "Constant(" << constantNode->value << ")";
             break;
         }
         case NodeType::UNARY_OP: {
@@ -111,11 +113,26 @@ void printAST(const Node* node, int count) {
             printAST(unOpNode->op.get(), 0);
             std::cout << ", " << std::endl;
             printAST(unOpNode->expr.get(), count + 3);
+            std::cout << std::endl;
             printSpace(count);
-            std::cout << ")" << std::endl;
+            std::cout << ")";
             break;
         }
         case NodeType::BINARY_OP: {
+            const BinaryNode* binOpNode = static_cast<const BinaryNode*>(node);
+            printSpace(count);
+            std::cout << "BinOp(";
+            printAST(binOpNode->binaryOperator.get(), 0);
+            std::cout << ", " << std::endl;
+
+            printAST(binOpNode->expression1.get(), count + 3);
+            std::cout << ", " << std::endl;
+            
+            printAST(binOpNode->expression2.get(), count + 3);
+            
+            std::cout << std::endl;
+            printSpace(count);
+            std::cout << ")";
             break;
         }
         case NodeType::NEGATE: {
@@ -124,6 +141,26 @@ void printAST(const Node* node, int count) {
         }
         case NodeType::COMPLEMENT: {
             std::cout << "Compliment";
+            break;
+        }
+        case NodeType::ADD: {
+            std::cout << "Add";
+            break;
+        }
+        case NodeType::SUBTRACT: {
+            std::cout << "Subtract";
+            break;
+        }
+        case NodeType::MULTIPLY: {
+            std::cout << "Multiply";
+            break;
+        }
+        case NodeType::DIVIDE: {
+            std::cout << "Divide";
+            break;
+        }
+        case NodeType::REMAINDER: {
+            std::cout << "Remainder";
             break;
         }
     }
