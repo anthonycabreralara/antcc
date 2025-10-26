@@ -73,7 +73,7 @@ std::vector<Token> Lexer::tokenize() {
                  currentChar == ';' || currentChar == '-' ||
                  currentChar == '~' || currentChar == '!' ||
                  currentChar == '+' || currentChar == '*' ||
-                 currentChar == '%') {
+                 currentChar == '/' || currentChar == '%') {
             switch (currentChar) {
                 case '(': tokens.emplace_back(TokenType::OPEN_PARENTHESIS, "("); break;
                 case ')': tokens.emplace_back(TokenType::CLOSE_PARENTHESIS, ")"); break;
@@ -92,6 +92,7 @@ std::vector<Token> Lexer::tokenize() {
                     }
                 case '+' : tokens.emplace_back(TokenType::ADD, "+"); break;
                 case '*' : tokens.emplace_back(TokenType::MULTIPLY, "*"); break;
+                case '/' : tokens.emplace_back(TokenType::DIVIDE, "/"); break;
                 case '%' : tokens.emplace_back(TokenType::REMAINDER, "%"); break;
 
             }

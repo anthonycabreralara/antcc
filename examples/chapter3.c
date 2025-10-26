@@ -1,3 +1,3 @@
 int main(void) {
- return 2-2*6;
+ return 1 * 2 - 3 * (4 / 5);
 }
