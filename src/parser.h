@@ -13,7 +13,9 @@ private:
     std::vector<Token>& tokens;
 
     std::unique_ptr<Node> getUnOp(std::string s);
-    std::unique_ptr<Node> parseExpression();
+    std::unique_ptr<Node> getBinOp(std::string s);
+    std::unique_ptr<Node> parseFactor();
+    std::unique_ptr<Node> parseExpression(int minPrec);
     std::unique_ptr<Node> parseStatement();
     std::unique_ptr<ProgramNode> parseProgram();
     std::unique_ptr<FunctionNode> parseFunction();
@@ -22,6 +24,7 @@ private:
     Token& advance();
     bool check(TokenType type) const;
     bool match(TokenType type);
+    int getPrecidence(std::string s);
 
 public:
     Parser(std::vector<Token>& tokens);

@@ -24,7 +24,7 @@ UnOpNode::UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e) {
 
 BinaryNode::BinaryNode(std::unique_ptr<Node> binaryOperator, std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2) 
     : binaryOperator(std::move(binaryOperator)), expression1(std::move(expression1)), expression2(std::move(expression2)) {
-    type = NodeType::BINARY;
+    type = NodeType::BINARY_OP;
 }
 
 AddNode::AddNode() {
@@ -113,6 +113,9 @@ void printAST(const Node* node, int count) {
             printAST(unOpNode->expr.get(), count + 3);
             printSpace(count);
             std::cout << ")" << std::endl;
+            break;
+        }
+        case NodeType::BINARY_OP: {
             break;
         }
         case NodeType::NEGATE: {
