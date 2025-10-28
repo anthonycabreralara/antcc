@@ -17,6 +17,20 @@ AsmIRUnary::AsmIRUnary(std::unique_ptr<AsmIRNode> unary_operator, std::unique_pt
     type = AsmIRNodeType::UNARY;
 }
 
+AsmIRBinary::AsmIRBinary(std::unique_ptr<AsmIRNode> binary_operator, std::unique_ptr<AsmIRNode> operand1, std::unique_ptr<AsmIRNode> operand2)
+    : binary_operator(std::move(binary_operator)), operand1(std::move(operand1)), operand2(std::move(operand2)) {
+    type = AsmIRNodeType::BINARY;
+}
+
+AsmIRIdiv::AsmIRIdiv(std::unique_ptr<AsmIRNode> operand)
+    : operand(std::move(operand)) {
+    type = AsmIRNodeType::IDIV;
+}
+
+AsmIRCdq::AsmIRCdq() {
+    type = AsmIRNodeType::CDQ;
+}
+
 AsmIRAllocateStack::AsmIRAllocateStack(int stack_size) 
     : stack_size(stack_size) {
     type = AsmIRNodeType::ALLOCATE_STACK;
@@ -28,6 +42,18 @@ AsmIRNeg::AsmIRNeg() {
 
 AsmIRNot::AsmIRNot() {
     type = AsmIRNodeType::NOT;
+}
+
+AsmIRAdd::AsmIRAdd() {
+    type = AsmIRNodeType::ADD;
+}
+
+AsmIRSubtract::AsmIRSubtract() {
+    type = AsmIRNodeType::SUBTRACT;
+}
+
+AsmIRMultiply::AsmIRMultiply() {
+    type = AsmIRNodeType::MULTIPLY;
 }
 
 AsmIRImm::AsmIRImm(std::string v) {

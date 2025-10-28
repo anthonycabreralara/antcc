@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-enum class AsmIRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER, INSTRUCTIONS, ALLOCATE_STACK, NEG, NOT, PSEUDO, STACK, UNARY };
+enum class AsmIRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER, INSTRUCTIONS, ALLOCATE_STACK, NEG, NOT, PSEUDO, STACK, UNARY, BINARY, IDIV, CDQ, ADD, SUBTRACT, MULTIPLY };
 
 class AsmIRNode {
 public:
@@ -38,6 +38,25 @@ public:
     AsmIRUnary(std::unique_ptr<AsmIRNode> unary_operator, std::unique_ptr<AsmIRNode> operand);
 };
 
+class AsmIRBinary : public AsmIRNode {
+public:
+    std::unique_ptr<AsmIRNode> binary_operator;
+    std::unique_ptr<AsmIRNode> operand1;
+    std::unique_ptr<AsmIRNode> operand2;
+    AsmIRBinary(std::unique_ptr<AsmIRNode> binary_operator, std::unique_ptr<AsmIRNode> operand1, std::unique_ptr<AsmIRNode> operand2);
+};
+
+class AsmIRIdiv : public AsmIRNode {
+public:
+    std::unique_ptr<AsmIRNode> operand;
+    AsmIRIdiv(std::unique_ptr<AsmIRNode> operand);
+};
+
+class AsmIRCdq : public AsmIRNode {
+public:
+    AsmIRCdq();
+};
+
 class AsmIRAllocateStack : public AsmIRNode {
 public:
     int stack_size;
@@ -52,6 +71,19 @@ public:
 class AsmIRNot : public AsmIRNode {
 public:
     AsmIRNot();
+};
+
+class AsmIRAdd : public AsmIRNode {
+public:
+    AsmIRAdd();
+};
+
+class AsmIRSubtract : public AsmIRNode {
+    AsmIRSubtract();
+};
+
+class AsmIRMultiply : public AsmIRNode {
+    AsmIRMultiply();
 };
 
 class AsmIRReg : public AsmIRNode {
