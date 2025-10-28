@@ -214,6 +214,44 @@ void passReplacePseudos(AsmIRNode* node, std::unordered_map<std::string, int>& p
             break;
         }
 
+        case AsmIRNodeType::BINARY: {
+            auto* binary = static_cast<AsmIRBinary*>(node);
+            if (binary->operand1->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(binary->operand1.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                binary->operand1 = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+
+            if (binary->operand2->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(binary->operand2.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                binary->operand2 = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            break;
+        }
+
+        case AsmIRNodeType::IDIV: {
+            auto* idiv = static_cast<AsmIRIdiv*>(node);
+            if (idiv->operand->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(idiv->operand.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                idiv->operand = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            break;
+        }
+
 
         default:
             break;
@@ -311,7 +349,7 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node) {
     int nextOffset = -4;
 
     passReplacePseudos(asm_ir.get(), pseudoToOffset, nextOffset);
-    asm_ir = passFixMoves(std::move(asm_ir), nullptr, nextOffset);
+    //asm_ir = passFixMoves(std::move(asm_ir), nullptr, nextOffset);
     return std::move(asm_ir);
 }
 
@@ -376,6 +414,28 @@ void printIR(const AsmIRNode* node, int space = 0) {
             std::cout << ")\n";
             break;
         }
+        case AsmIRNodeType::BINARY: {
+            const auto* binaryNode = static_cast<const AsmIRBinary*>(node);
+            std::cout << indent << "Binary(";
+            printIR(binaryNode->binary_operator.get(), 0);
+            std::cout << ", ";
+            printIR(binaryNode->operand1.get(), 0);
+            std::cout << ", ";
+            printIR(binaryNode->operand2.get(), 0);
+            std::cout << ")" << std::endl;
+            break;
+        }
+        case AsmIRNodeType::IDIV: {
+            const auto* idivNode = static_cast<const AsmIRIdiv*>(node);
+            std::cout << indent << "Idiv(";
+            printIR(idivNode->operand.get(), 0);
+            std::cout << ")" << std::endl;
+            break;
+        }
+        case AsmIRNodeType::CDQ: {
+            std::cout << indent << "Cdq()" << std::endl;
+            break;
+        }
         case AsmIRNodeType::ALLOCATE_STACK: {
             const auto* allocateStackNode = static_cast<const AsmIRAllocateStack*>(node);
             std::cout << indent << "AllocateStack(" << std::to_string(allocateStackNode->stack_size) << ")" << std::endl;
@@ -392,6 +452,18 @@ void printIR(const AsmIRNode* node, int space = 0) {
         }
         case AsmIRNodeType::NEG: {
             std::cout << "Neg()";
+            break;
+        }
+        case AsmIRNodeType::ADD: {
+            std::cout << "Add()";
+            break;
+        }
+        case AsmIRNodeType::SUBTRACT: {
+            std::cout << "Subtract()";
+            break;
+        }
+        case AsmIRNodeType::MULTIPLY: {
+            std::cout << "Multiply()";
             break;
         }
         default:
