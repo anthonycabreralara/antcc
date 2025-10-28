@@ -79,10 +79,12 @@ public:
 };
 
 class AsmIRSubtract : public AsmIRNode {
+public:
     AsmIRSubtract();
 };
 
 class AsmIRMultiply : public AsmIRNode {
+public:
     AsmIRMultiply();
 };
 

@@ -77,9 +77,68 @@ std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructi
 
             return nullptr;
         }
+        case TackyIRNodeType::BINARY: {
+            const auto* binaryNode = static_cast<const TackyIRBinary*>(node);
 
+            
+            if (binaryNode->op->type == TackyIRNodeType::DIVIDE) {
+                /*
+                    Mov(src1, Reg(AX))
+                    Cdq
+                    Idiv(src2)
+                    Mov(Reg(AX), dst)
+                */
+                auto src1 = buildAsmIRAst(binaryNode->src1.get(), nullptr);
+                auto src2 = buildAsmIRAst(binaryNode->src2.get(), nullptr);
+                auto dst = buildAsmIRAst(binaryNode->dst.get(), nullptr);
+
+                if (instructions) {
+                    instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(src1), std::make_unique<AsmIRReg>("AX")));
+                    instructions->instructions.push_back(std::make_unique<AsmIRCdq>());
+                    instructions->instructions.push_back(std::make_unique<AsmIRIdiv>(std::move(src2)));
+                    instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::make_unique<AsmIRReg>("AX"), std::move(dst)));
+                }
+            } else if (binaryNode->op->type == TackyIRNodeType::REMAINDER) {
+                /*
+                    Mov(src1, Reg(AX))
+                    Cdq
+                    Idiv(src2)
+                    Mov(Reg(DX), dst)
+                */
+                auto src1 = buildAsmIRAst(binaryNode->src1.get(), nullptr);
+                auto src2 = buildAsmIRAst(binaryNode->src2.get(), nullptr);
+                auto dst = buildAsmIRAst(binaryNode->dst.get(), nullptr);
+
+                if (instructions) {
+                    instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(src1), std::make_unique<AsmIRReg>("AX")));
+                    instructions->instructions.push_back(std::make_unique<AsmIRCdq>());
+                    instructions->instructions.push_back(std::make_unique<AsmIRIdiv>(std::move(src2)));
+                    instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::make_unique<AsmIRReg>("DX"), std::move(dst)));
+                }
+            } else {
+                /*
+                    Mov(src1, dst)
+                    Binary(binary_operator, src2, dst)
+                */
+                auto binaryOperator = buildAsmIRAst(binaryNode->op.get(), nullptr);
+                auto src1 = buildAsmIRAst(binaryNode->src1.get(), nullptr);
+                auto src2 = buildAsmIRAst(binaryNode->src2.get(), nullptr);
+                auto dst_1 = buildAsmIRAst(binaryNode->dst.get(), nullptr);
+                auto dst_2 = buildAsmIRAst(binaryNode->dst.get(), nullptr);
+
+                if (instructions) {
+                    instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(src1), std::move(dst_1)));
+                    instructions->instructions.push_back(std::make_unique<AsmIRBinary>(std::move(binaryOperator), std::move(src2), std::move(dst_2)));
+                }
+            }
+
+            return nullptr;
+        }
         case TackyIRNodeType::NEGATE: return std::make_unique<AsmIRNeg>();
         case TackyIRNodeType::COMPLEMENT: return std::make_unique<AsmIRNot>();
+        case TackyIRNodeType::ADD: return std::make_unique<AsmIRAdd>();
+        case TackyIRNodeType::SUBTRACT: return std::make_unique<AsmIRSubtract>();
+        case TackyIRNodeType::MULTIPLY: return std::make_unique<AsmIRMultiply>();
         case TackyIRNodeType::CONSTANT: {
             const auto* constantNode = static_cast<const TackyIRConstant*>(node);
             return std::make_unique<AsmIRImm>(constantNode->value);
