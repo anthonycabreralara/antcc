@@ -59,6 +59,26 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
             return std::make_unique<TackyIRVar>(tempName);
         }
 
+        case NodeType::BINARY_OP: {
+            const auto* binaryNode = static_cast<const BinaryNode*>(node);
+            auto tackyOp = generateTacky(binaryNode->binaryOperator.get(), nullptr);
+            auto v1 = generateTacky(binaryNode->expression1.get(), instructions);
+            auto v2 = generateTacky(binaryNode->expression2.get(), instructions);
+            
+            std::string tempName = makeTemporary();
+            auto dst = std::make_unique<TackyIRVar>(tempName);
+
+            instructions->instructions.push_back(
+                std::make_unique<TackyIRBinary>(
+                    std::move(tackyOp),
+                    std::move(v1),
+                    std::move(v2),
+                    std::move(dst)
+                )
+            );
+
+            return std::make_unique<TackyIRVar>(tempName);
+        }
 
         case NodeType::CONSTANT: {
             const auto* constantNode = static_cast<const ConstantNode*>(node);
@@ -71,6 +91,26 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
 
         case NodeType::COMPLEMENT: {
             return std::make_unique<TackyIRComplement>();
+        }
+
+        case NodeType::ADD: {
+            return std::make_unique<TackyIRAdd>();
+        }
+
+        case NodeType::SUBTRACT: {
+            return std::make_unique<TackyIRSubtract>();
+        }
+
+        case NodeType::MULTIPLY: {
+            return std::make_unique<TackyIRMultiply>();
+        }
+
+        case NodeType::DIVIDE: {
+            return std::make_unique<TackyIRDivide>();
+        }
+
+        case NodeType::REMAINDER: {
+            return std::make_unique<TackyIRRemainder>();
         }
 
         default:
@@ -118,6 +158,20 @@ void printTacky(const TackyIRNode* node, int count) {
             std::cout << ")" << std::endl;
             break;
         }
+        case TackyIRNodeType::BINARY: {
+            const TackyIRBinary* binaryNode = static_cast<const TackyIRBinary*>(node);
+            printSpace(count);
+            std::cout << "Binary(";
+            printTacky(binaryNode->op.get(), 0);
+            std::cout << ", ";
+            printTacky(binaryNode->src1.get(), 0);
+            std::cout << ", ";
+            printTacky(binaryNode->src2.get(), 0);
+            std::cout << ", ";
+            printTacky(binaryNode->dst.get(), 0);
+            std::cout << ")" << std::endl;
+            break;
+        }
         case TackyIRNodeType::VAR: {
             const TackyIRVar* varNode = static_cast<const TackyIRVar*>(node);
             std::cout << "Var(\"" << varNode->value << "\")";
@@ -129,6 +183,26 @@ void printTacky(const TackyIRNode* node, int count) {
         }
         case TackyIRNodeType::COMPLEMENT: {
             std::cout << "Complement";
+            break;
+        }
+        case TackyIRNodeType::ADD: {
+            std::cout << "Add";
+            break;
+        }
+        case TackyIRNodeType::SUBTRACT: {
+            std::cout << "Subtract";
+            break;
+        }
+        case TackyIRNodeType::MULTIPLY: {
+            std::cout << "Multiply";
+            break;
+        }
+        case TackyIRNodeType::DIVIDE: {
+            std::cout << "Divide";
+            break;
+        }
+        case TackyIRNodeType::REMAINDER: {
+            std::cout << "Remainder";
             break;
         }
         case TackyIRNodeType::RETURN: {
