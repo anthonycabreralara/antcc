@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-enum class TackyIRNodeType {PROGRAM, FUNCTION, RETURN, CONSTANT, NEGATE, COMPLEMENT, VAR, UNARY};
+enum class TackyIRNodeType {PROGRAM, FUNCTION, RETURN, CONSTANT, NEGATE, COMPLEMENT, VAR, UNARY, BINARY, ADD, SUBTRACT, MULTIPLY, DIVIDE, REMAINDER };
 
 class TackyIRNode {
 public:
@@ -50,6 +50,31 @@ public:
     TackyIRNegate();
 };
 
+class TackyIRAdd : public TackyIRNode {
+public:
+    TackyIRAdd();
+};
+
+class TackyIRSubtract : public TackyIRNode {
+public:
+    TackyIRSubtract();
+};
+
+class TackyIRMultiply : public TackyIRNode {
+public:
+    TackyIRMultiply();
+};
+
+class TackyIRDivide : public TackyIRNode {
+public:
+    TackyIRDivide();
+};
+
+class TackyIRRemainder : public TackyIRNode {
+public:
+    TackyIRRemainder();
+};
+
 class TackyIRConstant : public TackyIRNode {
 public:
     std::string value;
@@ -68,6 +93,15 @@ public:
     std::unique_ptr<TackyIRNode> src;
     std::unique_ptr<TackyIRNode> dst;
     TackyIRUnary(std::unique_ptr<TackyIRNode> o, std::unique_ptr<TackyIRNode> s, std::unique_ptr<TackyIRNode> d);
+};
+
+class TackyIRBinary : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> op;
+    std::unique_ptr<TackyIRNode> src1;
+    std::unique_ptr<TackyIRNode> src2;
+    std::unique_ptr<TackyIRNode> dst;
+    TackyIRBinary(std::unique_ptr<TackyIRNode> op, std::unique_ptr<TackyIRNode> src1, std::unique_ptr<TackyIRNode> src2, std::unique_ptr<TackyIRNode> dst);
 };
 
 #endif
