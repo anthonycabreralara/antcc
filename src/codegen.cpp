@@ -258,13 +258,13 @@ void passReplacePseudos(AsmIRNode* node, std::unordered_map<std::string, int>& p
     }
 }
 
-std::unique_ptr<AsmIRNode> passFixMoves(std::unique_ptr<AsmIRNode> node, AsmIRInstructions* instructions, int& nextOffset) {
+std::unique_ptr<AsmIRNode> passFixes(std::unique_ptr<AsmIRNode> node, AsmIRInstructions* instructions, int& nextOffset) {
     if (!node) return nullptr;
 
     switch (node->type) {
         case AsmIRNodeType::PROGRAM: {
             auto* programNode = static_cast<AsmIRProgram*>(node.get());
-            auto newFn = passFixMoves(std::move(programNode->function), nullptr, nextOffset);
+            auto newFn = passFixes(std::move(programNode->function), nullptr, nextOffset);
             programNode->function = std::unique_ptr<AsmIRFunction>(
                 static_cast<AsmIRFunction*>(newFn.release())
             );
@@ -286,10 +286,7 @@ std::unique_ptr<AsmIRNode> passFixMoves(std::unique_ptr<AsmIRNode> node, AsmIRIn
 
                 for (auto &oldInstr : oldVec) {
                     std::unique_ptr<AsmIRNode> taken = std::move(oldInstr);
-                    std::unique_ptr<AsmIRNode> processed = passFixMoves(std::move(taken), asmFunctionInstructions.get(), nextOffset);
-                    if (processed) {
-                        newVec.push_back(std::move(processed));
-                    }
+                    passFixes(std::move(taken), asmFunctionInstructions.get(), nextOffset);
                 }
 
                 fn->instructions = std::move(asmFunctionInstructions);
@@ -328,6 +325,64 @@ std::unique_ptr<AsmIRNode> passFixMoves(std::unique_ptr<AsmIRNode> node, AsmIRIn
             return node;
         }
 
+        case AsmIRNodeType::BINARY: {
+            auto* binary = static_cast<AsmIRBinary*>(node.get());
+            if (instructions && 
+                (binary->binary_operator->type == AsmIRNodeType::ADD || binary->binary_operator->type == AsmIRNodeType::SUBTRACT) &&
+                (binary->operand1->type == AsmIRNodeType::STACK && binary->operand2->type == AsmIRNodeType::STACK)) {
+                
+                auto binary_operator = std::move(binary->binary_operator);
+                auto operand1 = std::move(binary->operand1);
+                auto operand2 = std::move(binary->operand2);
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(operand1), std::make_unique<AsmIRReg>("R10")));
+                instructions->instructions.push_back(std::make_unique<AsmIRBinary>(std::move(binary_operator), std::make_unique<AsmIRReg>("R10"), std::move(operand2)));
+
+            } else if (instructions && 
+                binary->binary_operator->type == AsmIRNodeType::MULTIPLY &&
+                binary->operand2->type == AsmIRNodeType::STACK) {
+                
+                auto binary_operator = std::move(binary->binary_operator);
+                auto operand1 = std::move(binary->operand1);
+
+                auto* casted_operand2 = dynamic_cast<AsmIRStack*>(binary->operand2.get());
+                auto operand2_2 = std::make_unique<AsmIRStack>(casted_operand2->stack_size);
+                auto operand2 = std::move(binary->operand2);
+
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(operand2), std::make_unique<AsmIRReg>("R11")));
+                instructions->instructions.push_back(std::make_unique<AsmIRBinary>(std::move(binary_operator), std::move(operand1), std::make_unique<AsmIRReg>("R11")));
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::make_unique<AsmIRReg>("R11"), std::move(operand2_2)));
+            } else if (instructions) {
+                instructions->instructions.push_back(std::move(node));
+                return nullptr;
+            }
+            return nullptr;
+        }
+
+        case AsmIRNodeType::CDQ: {
+            if (instructions) {
+                instructions->instructions.push_back(std::move(node));
+                return nullptr;
+            }
+            return node;
+        }
+
+        case AsmIRNodeType::IDIV: {
+            auto* idiv = static_cast<AsmIRIdiv*>(node.get());
+            if (idiv->operand->type == AsmIRNodeType::IMMEDIATE) {
+                auto operand = std::move(idiv->operand);
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(operand), std::make_unique<AsmIRReg>("R10")));
+                instructions->instructions.push_back(std::make_unique<AsmIRIdiv>(std::make_unique<AsmIRReg>("R10")));
+                return nullptr;
+            } else {
+                if (instructions) {
+                    instructions->instructions.push_back(std::move(node));
+                    return nullptr;
+                }
+
+                return node;
+            }
+        }
+
         case AsmIRNodeType::RETURN: {
             if (instructions) {
                 instructions->instructions.push_back(std::move(node));
@@ -349,7 +404,7 @@ std::unique_ptr<AsmIRNode> generateCode(const TackyIRNode* node) {
     int nextOffset = -4;
 
     passReplacePseudos(asm_ir.get(), pseudoToOffset, nextOffset);
-    //asm_ir = passFixMoves(std::move(asm_ir), nullptr, nextOffset);
+    asm_ir = passFixes(std::move(asm_ir), nullptr, nextOffset);
     return std::move(asm_ir);
 }
 
