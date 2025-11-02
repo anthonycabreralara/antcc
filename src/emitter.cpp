@@ -41,6 +41,33 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             outf << "\n";
             break;
         }
+        case AsmIRNodeType::BINARY: {
+            const auto* binaryNode = static_cast<const AsmIRBinary*>(node);
+            outf << "\t";
+            emit(binaryNode->binary_operator.get(), outf);
+            outf << " ";
+            emit(binaryNode->operand1.get(), outf);
+            outf << ", ";
+            emit(binaryNode->operand2.get(), outf);
+            outf << "\n";
+            break;
+        }
+        case AsmIRNodeType::IDIV: {
+            const auto* idiv = static_cast<const AsmIRIdiv*>(node);
+            outf << "\t";
+            outf << "idivl ";
+            emit(idiv->operand.get(), outf);
+            outf << "\n";
+
+            break;
+        }
+        case AsmIRNodeType::CDQ: {
+            const auto* cdq = static_cast<const AsmIRCdq*>(node);
+            outf << "\t";
+            outf << "cdq";
+            outf << "\n";
+            break;
+        }
         case AsmIRNodeType::ALLOCATE_STACK: {
             // subq $<int>, %rsp
             const auto* allocateStackNode = static_cast<const AsmIRAllocateStack*>(node);
@@ -51,8 +78,14 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             const auto* regNode = static_cast<const AsmIRReg*>(node);
             if (regNode->value == "AX") {
                 outf << "%eax";
-            } else {
+            } else if (regNode->value == "DX") { 
+                outf << "%edx";
+            } else if (regNode->value == "R10") {
                 outf << "%r10d";
+            } else if (regNode->value == "R11") {
+                outf << "%r11d";
+            } else {
+                outf << "%";
             }
             break;
         }
@@ -72,6 +105,18 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
         }
         case AsmIRNodeType::NOT: {
             outf << "notl";
+            break;
+        }
+        case AsmIRNodeType::ADD: {
+            outf << "addl";
+            break;
+        }
+        case AsmIRNodeType::SUBTRACT: {
+            outf << "subl";
+            break;
+        }
+        case AsmIRNodeType::MULTIPLY: {
+            outf << "imull";
             break;
         }
         case AsmIRNodeType::RETURN: {
