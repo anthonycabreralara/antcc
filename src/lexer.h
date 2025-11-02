@@ -18,13 +18,21 @@ enum class TokenType {
     CLOSE_BRACE,
     SEMICOLON, // ;
     NEGATION, // -
+    NOT,
     BITWISE_COMPLEMENT, // ~
-    DECREMENT, // ~
-    LOGICAL_NEGATION, // !
+    DECREMENT, // --
     ADD,
     MULTIPLY,
     DIVIDE,
     REMAINDER,
+    AND,
+    OR,
+    EQUAL,
+    NOT_EQUAL,
+    LESS_THAN,
+    LESS_OR_EQUAL,
+    GREATER_THAN,
+    GREATER_OR_EQUAL,
     UNKNOWN
 };
 

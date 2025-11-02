@@ -73,7 +73,10 @@ std::vector<Token> Lexer::tokenize() {
                  currentChar == ';' || currentChar == '-' ||
                  currentChar == '~' || currentChar == '!' ||
                  currentChar == '+' || currentChar == '*' ||
-                 currentChar == '/' || currentChar == '%') {
+                 currentChar == '/' || currentChar == '%' ||
+                 currentChar == '&' || currentChar == '|' ||
+                 currentChar == '=' || currentChar == '<' ||
+                 currentChar == '>') {
             switch (currentChar) {
                 case '(': tokens.emplace_back(TokenType::OPEN_PARENTHESIS, "("); break;
                 case ')': tokens.emplace_back(TokenType::CLOSE_PARENTHESIS, ")"); break;
@@ -81,7 +84,14 @@ std::vector<Token> Lexer::tokenize() {
                 case '}': tokens.emplace_back(TokenType::CLOSE_BRACE, "}"); break;
                 case ';': tokens.emplace_back(TokenType::SEMICOLON, ";"); break;
                 case '~': tokens.emplace_back(TokenType::BITWISE_COMPLEMENT, "~"); break;
-                case '!': tokens.emplace_back(TokenType::LOGICAL_NEGATION, "!"); break;
+                case '!': 
+                      if (position + 1 < input.length() && input[position + 1] == '=') {
+                        tokens.emplace_back(TokenType::NOT_EQUAL, "!=");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::NOT, "!"); break;
+                    }  
                 case '-':
                     if (position + 1 < input.length() && input[position + 1] == '-') {
                         tokens.emplace_back(TokenType::DECREMENT, "--");
@@ -94,7 +104,46 @@ std::vector<Token> Lexer::tokenize() {
                 case '*' : tokens.emplace_back(TokenType::MULTIPLY, "*"); break;
                 case '/' : tokens.emplace_back(TokenType::DIVIDE, "/"); break;
                 case '%' : tokens.emplace_back(TokenType::REMAINDER, "%"); break;
-
+                case '&' :
+                    if (position + 1 < input.length() && input[position + 1] == '&') {
+                        tokens.emplace_back(TokenType::AND, "&&");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::UNKNOWN, std::string(1, currentChar)); break;
+                    }
+                case '|' :
+                    if (position + 1 < input.length() && input[position + 1] == '|') {
+                        tokens.emplace_back(TokenType::OR, "||");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::UNKNOWN, std::string(1, currentChar)); break;
+                    }
+                case '=' :
+                    if (position + 1 < input.length() && input[position + 1] == '=') {
+                        tokens.emplace_back(TokenType::EQUAL, "==");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::UNKNOWN, std::string(1, currentChar)); break;
+                    }
+                case '<' :
+                    if (position + 1 < input.length() && input[position + 1] == '=') {
+                        tokens.emplace_back(TokenType::LESS_OR_EQUAL, "<=");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::LESS_THAN, "<"); break;
+                    }
+                case '>' :
+                    if (position + 1 < input.length() && input[position + 1] == '=') {
+                        tokens.emplace_back(TokenType::GREATER_OR_EQUAL, ">=");
+                        position++;
+                        break;
+                    } else {
+                        tokens.emplace_back(TokenType::GREATER_THAN, ">"); break;
+                    }
             }
             position++;
         }
@@ -127,11 +176,19 @@ std::string getTokenTypeName(TokenType type) {
         case TokenType::NEGATION: return "NEGATION";
         case TokenType::DECREMENT: return "DECREMENT";
         case TokenType::BITWISE_COMPLEMENT: return "BITWISE_COMPLIMENT";
-        case TokenType::LOGICAL_NEGATION: return "LOGICAL_NEGATION";
+        case TokenType::NOT: return "NOT";
         case TokenType::ADD: return "ADD";
         case TokenType::MULTIPLY: return "MULTIPLY";
         case TokenType::DIVIDE: return "DIVIDE";
         case TokenType::REMAINDER: return "REMAINDER";
+        case TokenType::AND: return "AND";
+        case TokenType::OR: return "OR";
+        case TokenType::EQUAL: return "EQUAL";
+        case TokenType::NOT_EQUAL: return "NOT_EQUAL";
+        case TokenType::LESS_THAN: return "LESS_THAN";
+        case TokenType::GREATER_THAN: return "GREATER_THAN";
+        case TokenType::LESS_OR_EQUAL: return "LESS_OR_EQUAL";
+        case TokenType::GREATER_OR_EQUAL: return "GREATER_OR_EQUAL";
         case TokenType::UNKNOWN: return "UNKNOWN";
     }
     return "UNKNOWN";
