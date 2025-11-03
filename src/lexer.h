@@ -46,7 +46,6 @@ class Lexer {
 private:
     std::string input;
     size_t position;
-    bool valid;    std::unordered_map<std::string, TokenType> keywords;
 
     void initKeywords();
     bool isWhiteSpace(char c);
@@ -60,6 +59,8 @@ public:
     Lexer(const std::string& source);
     std::vector<Token> tokenize();
     bool isValid() const;
+    bool valid;    
+    std::unordered_map<std::string, TokenType> keywords;
 };
 
 std::string getTokenTypeName(TokenType type);

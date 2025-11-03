@@ -93,6 +93,16 @@ int main(int argc, char *argv[]) {
     Lexer lexer(sourceCode);
     std::vector<Token> tokens = lexer.tokenize();
 
+    if (!lexer.valid) {
+        std::cout << "Invalid token(s):" << std::endl;
+        for (const auto &token: tokens) {
+            if (token.type == TokenType::UNKNOWN) {
+                std::cout << token.value << std::endl;
+            }
+        }
+        return 1;
+    }
+
     if (option == "--lex") {
         printTokens(tokens);
         return 0;
