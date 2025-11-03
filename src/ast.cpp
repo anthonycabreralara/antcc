@@ -47,6 +47,38 @@ RemainderNode::RemainderNode() {
     type = NodeType::REMAINDER;
 }
 
+AndNode::AndNode() {
+    type = NodeType::AND;
+}
+
+OrNode::OrNode() {
+    type = NodeType::OR;
+}
+
+EqualNode::EqualNode() {
+    type = NodeType::EQUAL;
+}
+
+NotEqualNode::NotEqualNode() {
+    type = NodeType::NOT_EQUAL;
+}
+
+LessThanNode::LessThanNode() {
+    type = NodeType::LESS_THAN;
+}
+
+LessOrEqualNode::LessOrEqualNode() {
+    type = NodeType::LESS_OR_EQUAL;
+}
+
+GreaterThanNode::GreaterThanNode() {
+    type = NodeType::GREATER_THAN;
+}
+
+GreaterOrEqualNode::GreaterOrEqualNode() {
+    type = NodeType::GREATER_OR_EQUAL;
+}
+
 ConstantNode::ConstantNode(std::string v) {
     type = NodeType::CONSTANT;
     value = std::move(v);

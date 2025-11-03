@@ -4,7 +4,30 @@
 #include <string>
 #include <memory>
 
-enum class NodeType { PROGRAM, FUNCTION, UNARY_OP, BINARY_OP, RETURN, CONSTANT, NEGATE, COMPLEMENT, ADD, SUBTRACT, MULTIPLY, DIVIDE, REMAINDER };
+enum class NodeType { 
+    PROGRAM, 
+    FUNCTION, 
+    UNARY_OP, 
+    BINARY_OP, 
+    RETURN, 
+    CONSTANT, 
+    NEGATE, 
+    COMPLEMENT, 
+    ADD, 
+    SUBTRACT, 
+    MULTIPLY, 
+    DIVIDE, 
+    REMAINDER, 
+    AND, 
+    OR,
+    EQUAL,
+    NOT_EQUAL,
+    LESS_THAN,
+    LESS_OR_EQUAL,
+    GREATER_THAN,
+    GREATER_OR_EQUAL,
+
+};
 
 /*
 program = Program(function_declaration)
@@ -73,6 +96,46 @@ public:
 class RemainderNode : public Node {
 public:
     RemainderNode();
+};
+
+class AndNode : public Node {
+public:
+    AndNode();
+};
+
+class OrNode : public Node {
+public:
+    OrNode();
+};
+
+class EqualNode : public Node {
+public:
+    EqualNode();
+};
+
+class NotEqualNode : public Node {
+public:
+    NotEqualNode();
+};
+
+class LessThanNode : public Node {
+public:
+    LessThanNode();
+};
+
+class LessOrEqualNode : public Node {
+public:
+    LessOrEqualNode();
+};
+
+class GreaterThanNode : public Node {
+public:
+    GreaterThanNode();
+};
+
+class GreaterOrEqualNode : public Node {
+public:
+    GreaterOrEqualNode();
 };
 
 class ConstantNode : public Node {
