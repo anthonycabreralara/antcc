@@ -18,7 +18,7 @@ FORMER GRAMMER
 */
 
 // -------- Parser Implementation --------
-Parser::Parser(std::vector<Token>& tokens) : tokens(tokens) {}
+Parser::Parser(std::vector<Token>& tokens) : tokens(tokens), valid(true) {}
 
 bool Parser::isAtEnd() const {
     return current >= tokens.size();
@@ -85,7 +85,6 @@ int Parser::getPrecidence(std::string s) {
 }
 
 std::unique_ptr<Node> Parser::parseFactor() {
-    bool valid = true;
     if (check(TokenType::CONSTANT)) {
         valid = valid && match(TokenType::CONSTANT);
         return std::make_unique<ConstantNode>(tokens[current - 1].value);
@@ -108,7 +107,6 @@ std::unique_ptr<Node> Parser::parseFactor() {
 }
 
 std::unique_ptr<Node> Parser::parseExpression(int minPrec) {
-    bool valid = true;
     auto left = parseFactor();
     while ((check(TokenType::ADD) || check(TokenType::NEGATION) || 
             check(TokenType::MULTIPLY) || check(TokenType::DIVIDE) ||
@@ -125,7 +123,6 @@ std::unique_ptr<Node> Parser::parseExpression(int minPrec) {
 }
 
 std::unique_ptr<Node> Parser::parseStatement() {
-    bool valid = true;
     valid = valid && match(TokenType::RETURN_KEYWORD);
     auto expression = parseExpression(0);
     valid = valid && match(TokenType::SEMICOLON);
@@ -133,13 +130,15 @@ std::unique_ptr<Node> Parser::parseStatement() {
 }
 
 std::unique_ptr<FunctionNode> Parser::parseFunction() {
-    bool valid = true;
     TokenType returnType = TokenType::UNKNOWN;
     std::string name;
 
     if (check(TokenType::INT_KEYWORD)) {
         returnType = TokenType::INT_KEYWORD;
         valid = valid && match(TokenType::INT_KEYWORD);
+    } else {
+        valid = false;
+        return nullptr;
     }
     valid = valid && match(TokenType::IDENTIFIER);
     name = tokens[current - 1].value;

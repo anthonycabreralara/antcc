@@ -29,6 +29,7 @@ private:
 public:
     Parser(std::vector<Token>& tokens);
     std::unique_ptr<Node> parse(); // returns AST root
+    bool valid;
 };
 
 #endif

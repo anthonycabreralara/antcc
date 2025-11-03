@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
                 std::cout << token.value << std::endl;
             }
         }
+        std::cout << "Exit code: 1" << std::endl;
         return 1;
     }
 
@@ -110,6 +111,12 @@ int main(int argc, char *argv[]) {
 
     Parser parser(tokens);
     auto ast = parser.parse();
+
+    if (!parser.valid) {
+        std::cout << "Invalid syntax" << std::endl;
+        std::cout << "Exit code: 1" << std::endl;
+        return 1;
+    }
 
     if (option == "--parse") {
         printAST(ast.get(), 0);
