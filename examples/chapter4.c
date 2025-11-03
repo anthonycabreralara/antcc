@@ -1,2 +1,3 @@
 int main(void) {
-    return 1 * 3;
+    return 2 >= 3;
+}

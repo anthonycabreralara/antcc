@@ -12,7 +12,8 @@ enum class NodeType {
     RETURN, 
     CONSTANT, 
     NEGATE, 
-    COMPLEMENT, 
+    COMPLEMENT,
+    NOT,
     ADD, 
     SUBTRACT, 
     MULTIPLY, 
@@ -56,6 +57,11 @@ public:
 class Negate : public Node {
 public:
     Negate();
+};
+
+class Not : public Node {
+public:
+    Not();
 };
 
 class UnOpNode : public Node {

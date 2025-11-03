@@ -16,6 +16,10 @@ Negate::Negate() {
     type = NodeType::NEGATE;
 }
 
+Not::Not() {
+    type = NodeType::NOT;
+}
+
 UnOpNode::UnOpNode(std::unique_ptr<Node> o, std::unique_ptr<Node> e) {
     type = NodeType::UNARY_OP;
     op = std::move(o);
@@ -175,6 +179,10 @@ void printAST(const Node* node, int count) {
             std::cout << "Compliment";
             break;
         }
+        case NodeType::NOT: {
+            std::cout << "Not";
+            break;
+        }
         case NodeType::ADD: {
             std::cout << "Add";
             break;
@@ -195,5 +203,38 @@ void printAST(const Node* node, int count) {
             std::cout << "Remainder";
             break;
         }
+        case NodeType::AND: {
+            std::cout << "And";
+            break;
+        }
+        case NodeType::OR: {
+            std::cout << "Or";
+            break;
+        }
+        case NodeType::EQUAL: {
+            std::cout << "Equal";
+            break;
+        }
+        case NodeType::NOT_EQUAL: {
+            std::cout << "NotEqual";
+            break;
+        }
+        case NodeType::LESS_THAN: {
+            std::cout << "LessThan";
+            break;
+        }
+        case NodeType::LESS_OR_EQUAL: {
+            std::cout << "LessOrEqual";
+            break;
+        }
+        case NodeType::GREATER_THAN: {
+            std::cout << "GreaterThan";
+            break;
+        }
+        case NodeType::GREATER_OR_EQUAL: {
+            std::cout << "GreaterOrEqual";
+            break;
+        }
+
     }
 }

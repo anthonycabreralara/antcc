@@ -47,6 +47,8 @@ std::unique_ptr<Node> Parser::getUnOp(std::string s) {
         return std::make_unique<Negate>();
     } else if (s == "~") {
         return std::make_unique<Complement>();
+    } else if (s == "!") {
+        return std::make_unique<Not>();
     }
 
     return nullptr;
@@ -63,13 +65,45 @@ std::unique_ptr<Node> Parser::getBinOp(std::string s) {
         return std::make_unique<DivideNode>();
     } else if (s == "%") {
         return std::make_unique<RemainderNode>();
+    } else if (s == "&&") {
+        return std::make_unique<AndNode>();
+    } else if (s == "||") {
+        return std::make_unique<OrNode>();
+    } else if (s == "==") {
+        return std::make_unique<EqualNode>();
+    } else if (s == "!=") {
+        return std::make_unique<NotEqualNode>();
+    } else if (s == "<") {
+        return std::make_unique<LessThanNode>();
+    } else if (s == "<=") {
+        return std::make_unique<LessOrEqualNode>();
+    } else if (s == ">") {
+        return std::make_unique<GreaterThanNode>();
+    } else if (s == ">=") {
+        return std::make_unique<GreaterOrEqualNode>();
     }
 
     return nullptr;
 }
 
 int Parser::getPrecidence(std::string s) {
-    if (s == "+") {
+    if (s == "||") {
+        return 5;
+    } else if (s == "&&") {
+        return 10;
+    } else if (s == "!=") {
+        return 30;
+    } else if (s == "==") {
+        return 30;
+    } else if (s == ">=") {
+        return 35;
+    } else if (s == ">") {
+        return 35;
+    } else if (s == "<=") {
+        return 35;
+    } else if (s == "<") {
+        return 35;
+    } else if (s == "+") {
         return 45;
     } else if (s == "-") {
         return 45;
@@ -88,7 +122,7 @@ std::unique_ptr<Node> Parser::parseFactor() {
     if (check(TokenType::CONSTANT)) {
         valid = valid && match(TokenType::CONSTANT);
         return std::make_unique<ConstantNode>(tokens[current - 1].value);
-    } else if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT)) {
+    } else if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT) || check(TokenType::NOT)) {
         TokenType opType = tokens[current].type;
         std::string opValue = tokens[current].value;
         valid = valid && match(opType);
@@ -110,7 +144,11 @@ std::unique_ptr<Node> Parser::parseExpression(int minPrec) {
     auto left = parseFactor();
     while ((check(TokenType::ADD) || check(TokenType::NEGATION) || 
             check(TokenType::MULTIPLY) || check(TokenType::DIVIDE) ||
-            check(TokenType::REMAINDER)) && getPrecidence(tokens[current].value) >= minPrec) {
+            check(TokenType::REMAINDER)) || check(TokenType::AND) ||
+            check(TokenType::OR) || check(TokenType::EQUAL) ||
+            check(TokenType::NOT_EQUAL) || check(TokenType::LESS_THAN) ||
+            check(TokenType::LESS_OR_EQUAL) || check(TokenType::GREATER_THAN) ||
+            check(TokenType::GREATER_OR_EQUAL) && getPrecidence(tokens[current].value) >= minPrec) {
         TokenType opType = tokens[current].type;
         std::string opValue = tokens[current].value;
         valid = valid && match(opType);
