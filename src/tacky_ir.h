@@ -5,7 +5,34 @@
 #include <vector>
 #include <memory>
 
-enum class TackyIRNodeType {PROGRAM, FUNCTION, RETURN, CONSTANT, NEGATE, COMPLEMENT, VAR, UNARY, BINARY, ADD, SUBTRACT, MULTIPLY, DIVIDE, REMAINDER };
+enum class TackyIRNodeType {
+    PROGRAM, 
+    FUNCTION, 
+    RETURN, 
+    CONSTANT, 
+    COMPLEMENT,
+    NEGATE,
+    NOT,
+    VAR, 
+    UNARY, 
+    BINARY, 
+    COPY,
+    JUMP,
+    JUMP_IF_ZERO,
+    JUMP_IF_NOT_ZERO,
+    LABEL, 
+    ADD, 
+    SUBTRACT, 
+    MULTIPLY, 
+    DIVIDE, 
+    REMAINDER,
+    EQUAL,
+    NOT_EQUAL,
+    LESS_THAN,
+    LESS_OR_EQUAL,
+    GREATER_THAN,
+    GREATER_OR_EQUAL
+};
 
 class TackyIRNode {
 public:
@@ -50,6 +77,11 @@ public:
     TackyIRNegate();
 };
 
+class TackyIRNot : public TackyIRNode {
+public:
+    TackyIRNot();
+};
+
 class TackyIRAdd : public TackyIRNode {
 public:
     TackyIRAdd();
@@ -73,6 +105,36 @@ public:
 class TackyIRRemainder : public TackyIRNode {
 public:
     TackyIRRemainder();
+};
+
+class TackyIREqual : public TackyIRNode {
+public:
+    TackyIREqual();
+};
+
+class TackyIRNotEqual : public TackyIRNode {
+public:
+    TackyIRNotEqual();
+};
+
+class TackyIRLessThan : public TackyIRNode {
+public:
+    TackyIRLessThan();
+};
+
+class TackyIRLessOrEqual : public TackyIRNode {
+public:
+    TackyIRLessOrEqual();
+};
+
+class TackyIRGreaterThan : public TackyIRNode {
+public:
+    TackyIRGreaterThan();
+};
+
+class TackyIRGreaterOrEqual : public TackyIRNode {
+public:
+    TackyIRGreaterOrEqual();
 };
 
 class TackyIRConstant : public TackyIRNode {
@@ -103,5 +165,40 @@ public:
     std::unique_ptr<TackyIRNode> dst;
     TackyIRBinary(std::unique_ptr<TackyIRNode> op, std::unique_ptr<TackyIRNode> src1, std::unique_ptr<TackyIRNode> src2, std::unique_ptr<TackyIRNode> dst);
 };
+
+class TackyIRCopy : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> src;
+    std::unique_ptr<TackyIRNode> dst;
+    TackyIRCopy(std::unique_ptr<TackyIRNode> src, std::unique_ptr<TackyIRNode> dst);
+};
+
+class TackyIRJump : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> target;
+    TackyIRJump(std::unique_ptr<TackyIRNode> target);
+};
+
+class TackyIRJumpIfZero : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> condition;
+    std::unique_ptr<TackyIRNode> target;
+    TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::unique_ptr<TackyIRNode> condition);
+};
+
+class TackyIRJumpIfNotZero : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> condition;
+    std::unique_ptr<TackyIRNode> target;
+    TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> target, std::unique_ptr<TackyIRNode> condition);
+};
+
+class TackyIRLabel : public TackyIRNode {
+public:
+    std::unique_ptr<TackyIRNode> identifier;
+    TackyIRLabel(std::unique_ptr<TackyIRNode> identifier);
+};
+
+
 
 #endif
