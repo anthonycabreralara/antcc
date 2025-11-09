@@ -93,6 +93,10 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
             return std::make_unique<TackyIRComplement>();
         }
 
+        case NodeType::NOT: {
+            return std::make_unique<TackyIRNot>();
+        }
+
         case NodeType::ADD: {
             return std::make_unique<TackyIRAdd>();
         }
@@ -111,6 +115,30 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
 
         case NodeType::REMAINDER: {
             return std::make_unique<TackyIRRemainder>();
+        }
+
+        case NodeType::EQUAL: {
+            return std::make_unique<TackyIREqual>();
+        }
+
+        case NodeType::NOT_EQUAL: {
+            return std::make_unique<TackyIRNotEqual>();
+        }
+
+        case NodeType::LESS_THAN: {
+            return std::make_unique<TackyIRLessThan>();
+        }
+
+        case NodeType::LESS_OR_EQUAL: {
+            return std::make_unique<TackyIRLessOrEqual>();
+        }
+
+        case NodeType::GREATER_THAN: {
+            return std::make_unique<TackyIRGreaterThan>();
+        }
+
+        case NodeType::GREATER_OR_EQUAL: {
+            return std::make_unique<TackyIRGreaterOrEqual>();
         }
 
         default:
@@ -203,6 +231,30 @@ void printTacky(const TackyIRNode* node, int count) {
         }
         case TackyIRNodeType::REMAINDER: {
             std::cout << "Remainder";
+            break;
+        }
+        case TackyIRNodeType::EQUAL: {
+            std::cout << "Equal";
+            break;
+        }
+        case TackyIRNodeType::NOT_EQUAL: {
+            std::cout << "NotEqual";
+            break;
+        }
+        case TackyIRNodeType::LESS_THAN: {
+            std::cout << "LessThan";
+            break;
+        }
+        case TackyIRNodeType::LESS_OR_EQUAL: {
+            std::cout << "LessOrEqual";
+            break;
+        }
+        case TackyIRNodeType::GREATER_THAN: {
+            std::cout << "GreaterThan";
+            break;
+        }
+        case TackyIRNodeType::GREATER_OR_EQUAL: {
+            std::cout << "GreaterOrEqual";
             break;
         }
         case TackyIRNodeType::RETURN: {
