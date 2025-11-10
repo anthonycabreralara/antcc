@@ -175,15 +175,15 @@ public:
 
 class TackyIRJump : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> target;
-    TackyIRJump(std::unique_ptr<TackyIRNode> target);
+    std::string target;
+    TackyIRJump(std::string target);
 };
 
 class TackyIRJumpIfZero : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> condition;
     std::unique_ptr<TackyIRNode> target;
-    TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::unique_ptr<TackyIRNode> condition);
+    std::string condition;
+    TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::string condition);
 };
 
 class TackyIRJumpIfNotZero : public TackyIRNode {
@@ -195,8 +195,8 @@ public:
 
 class TackyIRLabel : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> identifier;
-    TackyIRLabel(std::unique_ptr<TackyIRNode> identifier);
+    std::string identifier;
+    TackyIRLabel(std::string identifier);
 };
 
 

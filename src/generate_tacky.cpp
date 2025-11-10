@@ -3,9 +3,19 @@
 #include <iostream>
 
 int temporaryAddress = 0;
+int falseAndLabelCount = 0;
+int endLabelCount = 0;
 
 std::string makeTemporary() {
     return "tmp" + std::to_string(temporaryAddress++) + ".o";
+}
+
+std::string makeFalseAndLabel() {
+    return "and_false" + std::to_string(falseAndLabelCount++);
+}
+
+std::string makeEndLabel() {
+    return "end" + std::to_string(endLabelCount++);
 }
 
 std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions* instructions) {
@@ -62,22 +72,42 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
         case NodeType::BINARY_OP: {
             const auto* binaryNode = static_cast<const BinaryNode*>(node);
             auto tackyOp = generateTacky(binaryNode->binaryOperator.get(), nullptr);
-            auto v1 = generateTacky(binaryNode->expression1.get(), instructions);
-            auto v2 = generateTacky(binaryNode->expression2.get(), instructions);
             
-            std::string tempName = makeTemporary();
-            auto dst = std::make_unique<TackyIRVar>(tempName);
+            if (binaryNode->binaryOperator->type == NodeType::AND) {
+                std::string falseLabel = makeFalseAndLabel();
+                std::string endLabel = makeEndLabel();
+                std::string result = makeTemporary();
 
-            instructions->instructions.push_back(
-                std::make_unique<TackyIRBinary>(
-                    std::move(tackyOp),
-                    std::move(v1),
-                    std::move(v2),
-                    std::move(dst)
-                )
-            );
+                auto v1 = generateTacky(binaryNode->expression1.get(), instructions);
+                instructions->instructions.push_back(std::make_unique<TackyIRJumpIfZero>(std::move(v1), falseLabel));
 
-            return std::make_unique<TackyIRVar>(tempName);
+                auto v2 = generateTacky(binaryNode->expression2.get(), instructions);
+                instructions->instructions.push_back(std::make_unique<TackyIRJumpIfZero>(std::move(v2), falseLabel));
+
+                instructions->instructions.push_back(std::make_unique<TackyIRCopy>(std::make_unique<TackyIRConstant>("1"), std::make_unique<TackyIRVar>(result)));
+
+                instructions->instructions.push_back(std::make_unique<TackyIRJump>(endLabel));
+                instructions->instructions.push_back(std::make_unique<TackyIRLabel>(falseLabel));
+                instructions->instructions.push_back(std::make_unique<TackyIRCopy>(std::make_unique<TackyIRConstant>("0"), std::make_unique<TackyIRVar>(result)));
+                instructions->instructions.push_back(std::make_unique<TackyIRLabel>(endLabel));
+
+                return std::make_unique<TackyIRVar>(result);
+            } else {
+                auto v1 = generateTacky(binaryNode->expression1.get(), instructions);
+                auto v2 = generateTacky(binaryNode->expression2.get(), instructions);
+                std::string tempName = makeTemporary();
+                auto dst = std::make_unique<TackyIRVar>(tempName);
+
+                instructions->instructions.push_back(
+                    std::make_unique<TackyIRBinary>(
+                        std::move(tackyOp),
+                        std::move(v1),
+                        std::move(v2),
+                        std::move(dst)
+                    )
+                );
+                return std::make_unique<TackyIRVar>(tempName);
+            }
         }
 
         case NodeType::CONSTANT: {
@@ -270,6 +300,37 @@ void printTacky(const TackyIRNode* node, int count) {
             std::cout << "Constant(" << constantNode->value << ")";
             break;
         }
+        case TackyIRNodeType::JUMP: {
+            printSpace(count);
+            const TackyIRJump* jumpNode = static_cast<const TackyIRJump*>(node);
+            std::cout << "Jump(" << jumpNode->target << ")" << std::endl;
+            break;
+        }
+        case TackyIRNodeType::JUMP_IF_ZERO: {
+            const TackyIRJumpIfZero* jumpIfZeroNode = static_cast<const TackyIRJumpIfZero*>(node);
+            printSpace(count);
+            std::cout << "JumpIfZero(";
+            printTacky(jumpIfZeroNode->target.get(), 0);
+            std::cout << ", " << jumpIfZeroNode->condition << ")" << std::endl;
+            break;
+        }
+        case TackyIRNodeType::COPY: {
+            const TackyIRCopy* copyNode = static_cast<const TackyIRCopy*>(node);
+            printSpace(count);
+            std::cout << "Copy(";
+            printTacky(copyNode->src.get(), 0);
+            std::cout << ", ";
+            printTacky(copyNode->dst.get(), 0);
+            std::cout << ")" << std::endl;
+            break;
+        }
+        case TackyIRNodeType::LABEL: {
+            const TackyIRLabel* labelNode = static_cast<const TackyIRLabel*>(node);
+            printSpace(count);
+            std::cout << "Label(" << labelNode->identifier << ")" << std::endl;
+            break;
+        }
+
         default:
             printSpace(count);
             std::cout << "SKIP" << std::endl;

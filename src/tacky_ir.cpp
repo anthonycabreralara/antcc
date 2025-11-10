@@ -101,12 +101,12 @@ TackyIRCopy::TackyIRCopy(std::unique_ptr<TackyIRNode> src, std::unique_ptr<Tacky
     type = TackyIRNodeType::COPY;
 }
 
-TackyIRJump::TackyIRJump(std::unique_ptr<TackyIRNode> target)
+TackyIRJump::TackyIRJump(std::string target)
     : target(std::move(target)) {
     type = TackyIRNodeType::JUMP;
 }
 
-TackyIRJumpIfZero::TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> condition, std::unique_ptr<TackyIRNode> target)
+TackyIRJumpIfZero::TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::string condition)
     : condition(std::move(condition)), target(std::move(target)) {
     type = TackyIRNodeType::JUMP_IF_ZERO;
 }
@@ -116,7 +116,7 @@ TackyIRJumpIfNotZero::TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> conditio
     type = TackyIRNodeType::JUMP_IF_NOT_ZERO;
 }
 
-TackyIRLabel::TackyIRLabel(std::unique_ptr<TackyIRNode> identifier)
+TackyIRLabel::TackyIRLabel(std::string identifier)
     : identifier(std::move(identifier)) {
     type = TackyIRNodeType::LABEL;
 }
