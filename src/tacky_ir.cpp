@@ -111,7 +111,7 @@ TackyIRJumpIfZero::TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::s
     type = TackyIRNodeType::JUMP_IF_ZERO;
 }
 
-TackyIRJumpIfNotZero::TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> condition, std::unique_ptr<TackyIRNode> target)
+TackyIRJumpIfNotZero::TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> target, std::string condition)
     : condition(std::move(condition)), target(std::move(target)) {
     type = TackyIRNodeType::JUMP_IF_NOT_ZERO;
 }

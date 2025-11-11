@@ -188,9 +188,9 @@ public:
 
 class TackyIRJumpIfNotZero : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> condition;
     std::unique_ptr<TackyIRNode> target;
-    TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> target, std::unique_ptr<TackyIRNode> condition);
+    std::string condition;
+    TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> target, std::string condition);
 };
 
 class TackyIRLabel : public TackyIRNode {
