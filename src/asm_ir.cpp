@@ -22,6 +22,11 @@ AsmIRBinary::AsmIRBinary(std::unique_ptr<AsmIRNode> binary_operator, std::unique
     type = AsmIRNodeType::BINARY;
 }
 
+AsmIRCmp::AsmIRCmp(std::unique_ptr<AsmIRNode> operand1, std::unique_ptr<AsmIRNode> operand2)
+    : operand1(std::move(operand1)), operand2(std::move(operand2)) {
+    type = AsmIRNodeType::CMP;
+}
+
 AsmIRIdiv::AsmIRIdiv(std::unique_ptr<AsmIRNode> operand)
     : operand(std::move(operand)) {
     type = AsmIRNodeType::IDIV;
@@ -29,6 +34,26 @@ AsmIRIdiv::AsmIRIdiv(std::unique_ptr<AsmIRNode> operand)
 
 AsmIRCdq::AsmIRCdq() {
     type = AsmIRNodeType::CDQ;
+}
+
+AsmIRJmp::AsmIRJmp(std::string identifier)
+    : identifier(std::move(identifier)) {
+    type = AsmIRNodeType::JMP;
+}
+
+AsmIRJmpCC::AsmIRJmpCC(std::string cond_code, std::string identifier)
+    : cond_code(std::move(cond_code)), identifier(std::move(identifier)) {
+    type = AsmIRNodeType::JMP_CC;
+}
+
+AsmIRSetCC::AsmIRSetCC(std::string cond_code, std::unique_ptr<AsmIRNode> operand)
+    : cond_code(std::move(cond_code)), operand(std::move(operand)) {
+    type = AsmIRNodeType::SET_CC;
+}
+
+AsmIRLabel::AsmIRLabel(std::string identifier) 
+    : identifier(std::move(identifier)) {
+    type = AsmIRNodeType::LABEL;
 }
 
 AsmIRAllocateStack::AsmIRAllocateStack(int stack_size) 

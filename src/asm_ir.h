@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-enum class AsmIRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER, INSTRUCTIONS, ALLOCATE_STACK, NEG, NOT, PSEUDO, STACK, UNARY, BINARY, IDIV, CDQ, ADD, SUBTRACT, MULTIPLY };
+enum class AsmIRNodeType { PROGRAM, FUNCTION, MOV, IMMEDIATE, RETURN, REGISTER, INSTRUCTIONS, ALLOCATE_STACK, NEG, NOT, PSEUDO, STACK, UNARY, BINARY, CMP, IDIV, CDQ, JMP, JMP_CC, SET_CC, LABEL, ADD, SUBTRACT, MULTIPLY };
 
 class AsmIRNode {
 public:
@@ -46,6 +46,13 @@ public:
     AsmIRBinary(std::unique_ptr<AsmIRNode> binary_operator, std::unique_ptr<AsmIRNode> operand1, std::unique_ptr<AsmIRNode> operand2);
 };
 
+class AsmIRCmp : public AsmIRNode {
+public:
+    std::unique_ptr<AsmIRNode> operand1;
+    std::unique_ptr<AsmIRNode> operand2;
+    AsmIRCmp(std::unique_ptr<AsmIRNode> operand1, std::unique_ptr<AsmIRNode> operand2);
+};
+
 class AsmIRIdiv : public AsmIRNode {
 public:
     std::unique_ptr<AsmIRNode> operand;
@@ -55,6 +62,32 @@ public:
 class AsmIRCdq : public AsmIRNode {
 public:
     AsmIRCdq();
+};
+
+class AsmIRJmp : public AsmIRNode {
+public:
+    std::string identifier;
+    AsmIRJmp(std::string identifier);
+};
+
+class AsmIRJmpCC : public AsmIRNode {
+public:
+    std::string cond_code;
+    std::string identifier;
+    AsmIRJmpCC(std::string cond_code, std::string identifier);
+};
+
+class AsmIRSetCC : public AsmIRNode {
+public:
+    std::string cond_code;
+    std::unique_ptr<AsmIRNode> operand;
+    AsmIRSetCC(std::string cond_code, std::unique_ptr<AsmIRNode> operand);
+};
+
+class AsmIRLabel : public AsmIRNode {
+public:
+    std::string identifier;
+    AsmIRLabel(std::string identifier);
 };
 
 class AsmIRAllocateStack : public AsmIRNode {
