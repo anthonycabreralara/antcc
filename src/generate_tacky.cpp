@@ -76,7 +76,7 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
         case NodeType::BINARY_OP: {
             const auto* binaryNode = static_cast<const BinaryNode*>(node);
             auto tackyOp = generateTacky(binaryNode->binaryOperator.get(), nullptr);
-            
+
             if (binaryNode->binaryOperator->type == NodeType::AND) {
                 std::string falseLabel = makeFalseAndLabel();
                 std::string endLabel = makeEndLabel();
@@ -264,6 +264,10 @@ void printTacky(const TackyIRNode* node, int count) {
         }
         case TackyIRNodeType::COMPLEMENT: {
             std::cout << "Complement";
+            break;
+        }
+        case TackyIRNodeType::NOT: {
+            std::cout << "Not";
             break;
         }
         case TackyIRNodeType::ADD: {
