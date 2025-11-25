@@ -6,25 +6,25 @@
 #include <memory>
 
 enum class TackyIRNodeType {
-    PROGRAM, 
-    FUNCTION, 
-    RETURN, 
-    CONSTANT, 
+    PROGRAM,
+    FUNCTION,
+    RETURN,
+    CONSTANT,
     COMPLEMENT,
     NEGATE,
     NOT,
-    VAR, 
-    UNARY, 
-    BINARY, 
+    VAR,
+    UNARY,
+    BINARY,
     COPY,
     JUMP,
     JUMP_IF_ZERO,
     JUMP_IF_NOT_ZERO,
-    LABEL, 
-    ADD, 
-    SUBTRACT, 
-    MULTIPLY, 
-    DIVIDE, 
+    LABEL,
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
     REMAINDER,
     EQUAL,
     NOT_EQUAL,
@@ -181,16 +181,16 @@ public:
 
 class TackyIRJumpIfZero : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> target;
-    std::string condition;
-    TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> target, std::string condition);
+    std::unique_ptr<TackyIRNode> condition;
+    std::string target;
+    TackyIRJumpIfZero(std::unique_ptr<TackyIRNode> condition, std::string target);
 };
 
 class TackyIRJumpIfNotZero : public TackyIRNode {
 public:
-    std::unique_ptr<TackyIRNode> target;
-    std::string condition;
-    TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> target, std::string condition);
+    std::unique_ptr<TackyIRNode> condition;
+    std::string target;
+    TackyIRJumpIfNotZero(std::unique_ptr<TackyIRNode> condition, std::string target);
 };
 
 class TackyIRLabel : public TackyIRNode {

@@ -337,16 +337,16 @@ void printTacky(const TackyIRNode* node, int count) {
             const TackyIRJumpIfZero* jumpIfZeroNode = static_cast<const TackyIRJumpIfZero*>(node);
             printSpace(count);
             std::cout << "JumpIfZero(";
-            printTacky(jumpIfZeroNode->target.get(), 0);
-            std::cout << ", " << jumpIfZeroNode->condition << ")" << std::endl;
+            printTacky(jumpIfZeroNode->condition.get(), 0);
+            std::cout << ", " << jumpIfZeroNode->target << ")" << std::endl;
             break;
         }
         case TackyIRNodeType::JUMP_IF_NOT_ZERO: {
             const TackyIRJumpIfNotZero* jumpIfNotZero = static_cast<const TackyIRJumpIfNotZero*>(node);
             printSpace(count);
             std::cout << "JumpIfNotZero(";
-            printTacky(jumpIfNotZero->target.get(), 0);
-            std::cout << ", " << jumpIfNotZero->condition << ")" << std::endl;
+            printTacky(jumpIfNotZero->condition.get(), 0);
+            std::cout << ", " << jumpIfNotZero->target << ")" << std::endl;
             break;
         }
         case TackyIRNodeType::COPY: {
