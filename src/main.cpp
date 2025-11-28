@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
         if (argc == 3) {
             option = argv[2];
-            if (option != "--lex" && option != "--parse" && option != "--codegen" && option != "--tacky") {
+            if (option != "--lex" && option != "--parse" && option != "--codegen" && option != "--tacky" && option != "--emit") {
                 std::cout << "Invalid options." << std::endl;
                 return 1;
             }
@@ -137,6 +137,9 @@ int main(int argc, char *argv[]) {
     }
 
     emitCode(asm_ir.get(), filename);
+    if (option == "--emit") {
+        return 0;
+    }
     compileAsmFile(filename);
     
 

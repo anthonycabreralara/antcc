@@ -455,6 +455,28 @@ std::unique_ptr<AsmIRNode> passFixes(std::unique_ptr<AsmIRNode> node, AsmIRInstr
             }
         }
 
+        case AsmIRNodeType::CMP: {
+            auto* cmp = static_cast<AsmIRCmp*>(node.get());
+
+            if (cmp->operand1->type == AsmIRNodeType::STACK &&
+                cmp->operand2->type == AsmIRNodeType::STACK) {
+                auto operand1 = std::move(cmp->operand1);
+                auto operand2 = std::move(cmp->operand2);
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(operand1), std::make_unique<AsmIRReg>("R10")));
+                instructions->instructions.push_back(std::make_unique<AsmIRCmp>(std::make_unique<AsmIRReg>("R10"), std::move(operand2)));
+            } else if (cmp->operand2->type == AsmIRNodeType::IMMEDIATE) {
+                auto operand1 = std::move(cmp->operand1);
+                auto operand2 = std::move(cmp->operand2);
+                instructions->instructions.push_back(std::make_unique<AsmIRMov>(std::move(operand2), std::make_unique<AsmIRReg>("R11")));
+                instructions->instructions.push_back(std::make_unique<AsmIRCmp>(std::move(operand1), std::make_unique<AsmIRReg>("R11")));
+            } else if (instructions) {
+                instructions->instructions.push_back(std::move(node));
+                return nullptr;
+            }
+
+            return node;
+        }
+
         case AsmIRNodeType::UNARY: {
             if (instructions) {
                 instructions->instructions.push_back(std::move(node));
@@ -497,14 +519,6 @@ std::unique_ptr<AsmIRNode> passFixes(std::unique_ptr<AsmIRNode> node, AsmIRInstr
         }
 
         case AsmIRNodeType::CDQ: {
-            if (instructions) {
-                instructions->instructions.push_back(std::move(node));
-                return nullptr;
-            }
-            return node;
-        }
-
-        case AsmIRNodeType::CMP: {
             if (instructions) {
                 instructions->instructions.push_back(std::move(node));
                 return nullptr;
