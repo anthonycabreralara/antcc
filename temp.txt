@@ -1,0 +1,38 @@
+int main(void) {
+    return 2 >= 3 || 3 == 1 && !2;
+}
+
+anthony@anthony:~/github/antcc$ ./antcc examples/chapter4.c --codegen
+Error: TackyIR -> AsmIR
+Program(
+  Function(name=main, body=[
+      AllocateStack(20)
+      Cmp(Imm(0), Imm(3))
+      JmpCC(NE, or_true0)
+      Cmp(Imm(0), Imm(1))
+      JmpCC(E, and_false0)
+      Cmp(Imm(0), Imm(2))
+      Mov(Imm(0), Stack(-4))
+      SetCC(E, Pseudo(tmp2.o))
+      Cmp(Imm(0), Pseudo(tmp2.o))
+      JmpCC(E, and_false0)
+      Mov(Imm(1), Stack(-8))
+      Label(and_false0)
+      Mov(Imm(0), Stack(-8))
+      Label(end1)
+      Cmp(Imm(3), Pseudo(tmp1.o))
+      Mov(Imm(0), Stack(-12))
+      SetCC(E, Pseudo(tmp3.o))
+      Cmp(Imm(0), Pseudo(tmp3.o))
+      JmpCC(NE, or_true0)
+      Mov(Imm(0), Stack(-16))
+      Label(or_true0)
+      Mov(Imm(1), Stack(-16))
+      Label(end0)
+      Cmp(Imm(2), Pseudo(tmp0.o))
+      Mov(Imm(0), Stack(-20))
+      SetCC(GE, Pseudo(tmp4.o))
+      Mov(Stack(-20), Register(AX))
+      Return()
+  ])
+)
