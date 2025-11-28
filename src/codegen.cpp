@@ -367,6 +367,29 @@ void passReplacePseudos(AsmIRNode* node, std::unordered_map<std::string, int>& p
             break;
         }
 
+        case AsmIRNodeType::CMP: {
+            auto* cmp = static_cast<AsmIRCmp*>(node);
+            if (cmp->operand1->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(cmp->operand1.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                cmp->operand1 = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            if (cmp->operand2->type == AsmIRNodeType::PSEUDO) {
+                auto* pseudo = static_cast<AsmIRPseudo*>(cmp->operand2.get());
+                auto& id = pseudo->identifier;
+                if (!pseudoToOffset.count(id)) {
+                    pseudoToOffset[id] = nextOffset;
+                    nextOffset -= 4;
+                }
+                cmp->operand2 = std::make_unique<AsmIRStack>(pseudoToOffset[id]);
+            }
+            break;
+        }
+
 
         default:
             break;
