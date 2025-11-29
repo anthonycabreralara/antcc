@@ -52,6 +52,40 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             outf << "\n";
             break;
         }
+        case AsmIRNodeType::CMP: {
+            const auto* cmpNode = static_cast<const AsmIRCmp*>(node);
+            outf << "\t";
+            outf << "cmpl ";
+            emit(cmpNode->operand1.get(), outf);
+            outf << ", ";
+            emit(cmpNode->operand2.get(), outf);
+            outf << "\n";
+            break;
+        }
+        case AsmIRNodeType::SET_CC: {
+            const auto* setCCNode = static_cast<const AsmIRSetCC*>(node);
+            std::string cond_code = "";
+            std::cout << setCCNode->cond_code << std::endl;
+            if (setCCNode->cond_code == "E") {
+                cond_code = "e";
+            } else if (setCCNode->cond_code == "NE") {
+                cond_code = "ne";
+            } else if (setCCNode->cond_code == "L") {
+                cond_code = "l";
+            } else if (setCCNode->cond_code == "LE") {
+                cond_code = "le";
+            } else if (setCCNode->cond_code == "G") {
+                cond_code = "g";
+            } else if (setCCNode->cond_code == "GE") {
+                cond_code = "ge";
+            } else {
+                std::cout << "Invalid condition code" << std::endl;
+            }
+            outf << "set" << cond_code;
+            //emit(setCCNode->operand.get(), outf);
+            outf << "\n";
+            break;
+        }
         case AsmIRNodeType::IDIV: {
             const auto* idiv = static_cast<const AsmIRIdiv*>(node);
             outf << "\t";
