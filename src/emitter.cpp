@@ -3,11 +3,11 @@
 #include <iostream>
 #include <fstream>
 
-void emit(const AsmIRNode* node, std::ofstream& outf) {
+void emit(const AsmIRNode* node, std::ofstream& outf, int registerBytes) {
     switch (node->type) {
         case AsmIRNodeType::PROGRAM: {
             const auto* programNode = static_cast<const AsmIRProgram*>(node);
-            emit(programNode->function.get(), outf);
+            emit(programNode->function.get(), outf, 4);
             outf << ".section .note.GNU-stack,\"\",@progbits";
             break;
         }
@@ -18,7 +18,7 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             outf << "\tpushq %rbp\n";
             outf << "\tmovq %rsp, %rbp\n";
             for (const auto& instr : functionNode->instructions->instructions) {
-                emit(instr.get(), outf);
+                emit(instr.get(), outf, 4);
             }
 
             break;
@@ -26,29 +26,29 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
         case AsmIRNodeType::MOV: {
             const auto* moveNode = static_cast<const AsmIRMov*>(node);
             outf << "\tmovl ";
-            emit(moveNode->src.get(), outf);
+            emit(moveNode->src.get(), outf, 4);
             outf << ", ";
-            emit(moveNode->dst.get(), outf);
+            emit(moveNode->dst.get(), outf, 4);
             outf << "\n";
             break;
         }
         case AsmIRNodeType::UNARY: {
             const auto* unaryNode = static_cast<const AsmIRUnary*>(node);
             outf << "\t";
-            emit(unaryNode->unary_operator.get(), outf);
+            emit(unaryNode->unary_operator.get(), outf, 4);
             outf << " ";
-            emit(unaryNode->operand.get(), outf);
+            emit(unaryNode->operand.get(), outf, 4);
             outf << "\n";
             break;
         }
         case AsmIRNodeType::BINARY: {
             const auto* binaryNode = static_cast<const AsmIRBinary*>(node);
             outf << "\t";
-            emit(binaryNode->binary_operator.get(), outf);
+            emit(binaryNode->binary_operator.get(), outf, 4);
             outf << " ";
-            emit(binaryNode->operand1.get(), outf);
+            emit(binaryNode->operand1.get(), outf, 4);
             outf << ", ";
-            emit(binaryNode->operand2.get(), outf);
+            emit(binaryNode->operand2.get(), outf, 4);
             outf << "\n";
             break;
         }
@@ -56,16 +56,15 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             const auto* cmpNode = static_cast<const AsmIRCmp*>(node);
             outf << "\t";
             outf << "cmpl ";
-            emit(cmpNode->operand1.get(), outf);
+            emit(cmpNode->operand1.get(), outf, 4);
             outf << ", ";
-            emit(cmpNode->operand2.get(), outf);
+            emit(cmpNode->operand2.get(), outf, 4);
             outf << "\n";
             break;
         }
         case AsmIRNodeType::SET_CC: {
             const auto* setCCNode = static_cast<const AsmIRSetCC*>(node);
             std::string cond_code = "";
-            std::cout << setCCNode->cond_code << std::endl;
             if (setCCNode->cond_code == "E") {
                 cond_code = "e";
             } else if (setCCNode->cond_code == "NE") {
@@ -81,8 +80,9 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             } else {
                 std::cout << "Invalid condition code" << std::endl;
             }
-            outf << "set" << cond_code;
-            //emit(setCCNode->operand.get(), outf);
+            outf << "\t";
+            outf << "set" << cond_code << " ";
+            emit(setCCNode->operand.get(), outf, 1);
             outf << "\n";
             break;
         }
@@ -90,7 +90,7 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
             const auto* idiv = static_cast<const AsmIRIdiv*>(node);
             outf << "\t";
             outf << "idivl ";
-            emit(idiv->operand.get(), outf);
+            emit(idiv->operand.get(), outf, 4);
             outf << "\n";
 
             break;
@@ -110,14 +110,22 @@ void emit(const AsmIRNode* node, std::ofstream& outf) {
         }
         case AsmIRNodeType::REGISTER: {
             const auto* regNode = static_cast<const AsmIRReg*>(node);
-            if (regNode->value == "AX") {
+            if (regNode->value == "AX" && registerBytes == 4) {
                 outf << "%eax";
-            } else if (regNode->value == "DX") { 
+            } else if (regNode->value == "AX" && registerBytes == 1) {
+                outf << "%al";
+            } else if (regNode->value == "DX" && registerBytes == 4) { 
                 outf << "%edx";
-            } else if (regNode->value == "R10") {
+            } else if (regNode->value == "DX" && registerBytes == 1) { 
+                outf << "%dl";
+            } else if (regNode->value == "R10" && registerBytes == 4) {
                 outf << "%r10d";
-            } else if (regNode->value == "R11") {
+            } else if (regNode->value == "R10" && registerBytes == 1) {
+                outf << "%r10b";
+            } else if (regNode->value == "R11" && registerBytes == 4) {
                 outf << "%r11d";
+            } else if (regNode->value == "R11" && registerBytes == 1) {
+                outf << "%r11b";
             } else {
                 outf << "%";
             }
@@ -170,5 +178,6 @@ void emitCode(const AsmIRNode* node, std::string filename) {
         std::cerr << "Uh oh, output.s could not be opened for writing!\n";
         return;
     }
-    emit(node, outf);
+    // registerBytes default to 4, exceptions in setcc
+    emit(node, outf, 4);
 }
