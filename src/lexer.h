@@ -21,6 +21,7 @@ enum class TokenType {
     NOT,
     BITWISE_COMPLEMENT, // ~
     DECREMENT, // --
+    ASSIGN, // =
     ADD,
     MULTIPLY,
     DIVIDE,

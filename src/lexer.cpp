@@ -126,7 +126,7 @@ std::vector<Token> Lexer::tokenize() {
                         position++;
                         break;
                     } else {
-                        tokens.emplace_back(TokenType::UNKNOWN, std::string(1, currentChar)); break;
+                        tokens.emplace_back(TokenType::EQUAL, "="); break;
                     }
                 case '<' :
                     if (position + 1 < input.length() && input[position + 1] == '=') {
@@ -177,6 +177,7 @@ std::string getTokenTypeName(TokenType type) {
         case TokenType::DECREMENT: return "DECREMENT";
         case TokenType::BITWISE_COMPLEMENT: return "BITWISE_COMPLIMENT";
         case TokenType::NOT: return "NOT";
+        case TokenType::ASSIGN: return "ASSIGN";
         case TokenType::ADD: return "ADD";
         case TokenType::MULTIPLY: return "MULTIPLY";
         case TokenType::DIVIDE: return "DIVIDE";
