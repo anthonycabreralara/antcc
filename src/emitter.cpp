@@ -62,6 +62,26 @@ void emit(const AsmIRNode* node, std::ofstream& outf, int registerBytes) {
             outf << "\n";
             break;
         }
+        case AsmIRNodeType::JMP: {
+            const auto* jmpNode = static_cast<const AsmIRJmp*>(node);
+            outf << "\t";
+            outf << "jmp .L" << jmpNode->identifier; 
+            outf << "\n";
+            break;
+        }
+        case AsmIRNodeType::JMP_CC: {
+            const auto* jmpNode = static_cast<const AsmIRJmpCC*>(node);
+            std::string cond_code = "";
+            if (jmpNode->cond_code == "NE") {
+                cond_code = "ne";
+            } else if (jmpNode->cond_code == "E") {
+                cond_code = "e";
+            }
+            outf << "\t";
+            outf << "j" << cond_code << " .L" << jmpNode->identifier ;
+            outf << "\n";
+            break;
+        }
         case AsmIRNodeType::SET_CC: {
             const auto* setCCNode = static_cast<const AsmIRSetCC*>(node);
             std::string cond_code = "";
@@ -83,6 +103,13 @@ void emit(const AsmIRNode* node, std::ofstream& outf, int registerBytes) {
             outf << "\t";
             outf << "set" << cond_code << " ";
             emit(setCCNode->operand.get(), outf, 1);
+            outf << "\n";
+            break;
+        }
+        case AsmIRNodeType::LABEL: {
+            const auto* labelNode = static_cast<const AsmIRLabel*>(node);
+            outf << "\t";
+            outf << ".L" << labelNode->identifier << ":";
             outf << "\n";
             break;
         }

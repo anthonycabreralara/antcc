@@ -158,8 +158,8 @@ std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructi
                 auto dst_2 = buildAsmIRAst(binaryNode->dst.get(), nullptr);
 
                 instructions->instructions.push_back(std::make_unique<AsmIRCmp>(
-                    std::move(src1),
-                    std::move(src2)
+                    std::move(src2),
+                    std::move(src1)
                 ));
                 instructions->instructions.push_back(std::make_unique<AsmIRMov>(
                     std::make_unique<AsmIRImm>("0"),
@@ -191,7 +191,8 @@ std::unique_ptr<AsmIRNode> buildAsmIRAst(const TackyIRNode* node, AsmIRInstructi
         }
         case TackyIRNodeType::JUMP: {
             const auto* jumpNode = static_cast<const TackyIRJump*>(node);
-            return std::make_unique<AsmIRJmp>(jumpNode->target);
+            instructions->instructions.push_back(std::make_unique<AsmIRJmp>(jumpNode->target));
+            return nullptr;
         }
         case TackyIRNodeType::JUMP_IF_ZERO: {
             const auto* jumpNode = static_cast<const TackyIRJumpIfZero*>(node);
