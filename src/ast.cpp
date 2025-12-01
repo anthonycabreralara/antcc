@@ -8,6 +8,20 @@ ReturnNode::ReturnNode(std::unique_ptr<Node> e) {
     expr = std::move(e);
 }
 
+ExpressionNode::ExpressionNode(std::unique_ptr<Node> expr) 
+    : expr(std::move(expr)){
+    type = NodeType::EXPRESSION;
+}
+
+NullNode::NullNode() {
+    type = NodeType::NULL_TYPE;
+}
+
+DeclarationNode::DeclarationNode(std::string identifier, std::unique_ptr<Node> expression)
+    : identifier(std::move(identifier)), expression(std::move(expression)) {
+    type = NodeType::DECLARATION;
+}
+
 Complement::Complement() {
     type = NodeType::COMPLEMENT;
 }
@@ -86,6 +100,16 @@ GreaterOrEqualNode::GreaterOrEqualNode() {
 ConstantNode::ConstantNode(std::string v) {
     type = NodeType::CONSTANT;
     value = std::move(v);
+}
+
+VarNode::VarNode(std::string identifier) 
+    : identifier(std::move(identifier)) {
+    type = NodeType::VAR;
+}
+
+AssignmentNode::AssignmentNode(std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2) 
+    : expression1(std::move(expression1)), expression2(std::move(expression2)) {
+    type = NodeType::ASSIGNMENT;
 }
 
 FunctionNode::FunctionNode(std::string n, int r, std::unique_ptr<Node> stmt) {

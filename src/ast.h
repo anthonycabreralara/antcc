@@ -9,7 +9,9 @@ enum class NodeType {
     FUNCTION, 
     UNARY_OP, 
     BINARY_OP, 
-    RETURN, 
+    RETURN,
+    EXPRESSION,
+    NULL_TYPE, 
     CONSTANT, 
     NEGATE, 
     COMPLEMENT,
@@ -27,6 +29,9 @@ enum class NodeType {
     LESS_OR_EQUAL,
     GREATER_THAN,
     GREATER_OR_EQUAL,
+    VAR,
+    ASSIGNMENT,
+    DECLARATION
 
 };
 
@@ -47,6 +52,23 @@ class ReturnNode : public Node {
 public:
     std::unique_ptr<Node> expr;
     ReturnNode(std::unique_ptr<Node> e);
+};
+
+class ExpressionNode : public Node {
+    std::unique_ptr<Node> expr;
+    ExpressionNode(std::unique_ptr<Node> expr);
+};
+
+class NullNode : public Node {
+    NullNode();
+};
+
+class DeclarationNode : public Node {
+public:
+    std::string identifier;
+    std::unique_ptr<Node> expression; // optional init
+
+    DeclarationNode(std::string identifier, std::unique_ptr<Node> expression);
 };
 
 class Complement : public Node {
@@ -148,6 +170,19 @@ class ConstantNode : public Node {
 public:
     std::string value;
     ConstantNode(std::string v);
+};
+
+class VarNode : public Node {
+public:
+    std::string identifier;
+    VarNode(std::string identifier);
+};
+
+class AssignmentNode : public Node {
+public:
+    std::unique_ptr<Node> expression1;
+    std::unique_ptr<Node> expression2;
+    AssignmentNode(std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2);
 };
 
 class FunctionNode : public Node {
