@@ -89,7 +89,9 @@ std::unique_ptr<Node> Parser::getBinOp(std::string s) {
 }
 
 int Parser::getPrecidence(std::string s) {
-    if (s == "||") {
+    if (s == "=") {
+        return 1;
+    } else if (s == "||") {
         return 5;
     } else if (s == "&&") {
         return 10;
