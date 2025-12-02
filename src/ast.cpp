@@ -119,6 +119,8 @@ FunctionNode::FunctionNode(std::string n, int r, std::unique_ptr<Node> stmt) {
     statement = std::move(stmt);
 }
 
+BlockItemsNode::BlockItemsNode() {}
+
 ProgramNode::ProgramNode(std::unique_ptr<FunctionNode> func) {
     type = NodeType::PROGRAM;
     function = std::move(func);

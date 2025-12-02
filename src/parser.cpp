@@ -7,10 +7,12 @@
 /*
 FORMER GRAMMER
 <program>       ::= <function>
-<function>      ::= "int" <id> "(" ")" "{" <statement> "}"
-<statement>     ::= "return" <exp> ";"
+<function>      ::= "int" <identifier> "(" "void" ")" "{" { <block-item> } "}"
+<block-item>    ::= <statement> | <declaration>
+<declaration>   ::= "int" <identifier> [ "=" <exp> ] ";"
+<statement>     ::= "return" <exp> "; | [ "=" <expr> ]"
 <exp>           ::= <factor> | <exp> <binop> <exp>
-<factor>        ::= <int> | <unop> <factor> | "(" <exp> ")" 
+<factor>        ::= <int> | <identifier> | <unop> <factor> | "(" <exp> ")" 
 <unop>          ::= "-" | "~"
 <binop>         ::= "-" | "+" | "*" | "/" | "%"
 <identifier>    ::= ? An identifier token ?
@@ -167,6 +169,48 @@ std::unique_ptr<Node> Parser::parseStatement() {
     return std::make_unique<ReturnNode>(std::move(expression));
 }
 
+std::unique_ptr<Node> Parser::parseDeclaration() {
+    TokenType varType = TokenType::UNKNOWN;
+    std::string identifier = "";
+
+    // Check Type
+    if (check(TokenType::INT_KEYWORD)) {
+        varType = TokenType::INT_KEYWORD;
+        valid = valid && match(TokenType::INT_KEYWORD);
+    } else {
+        valid = false;
+        return nullptr;
+    }
+
+    // Check Name
+    if (check(TokenType::IDENTIFIER)) {
+        identifier = tokens[current].value;
+        valid = valid && match(TokenType::IDENTIFIER);
+    } else {
+        valid = false;
+        return nullptr;
+    }
+
+    // Check '='
+    if (check(TokenType::EQUAL)) {
+        valid = valid && match(TokenType::EQUAL);
+    } else {
+        valid = false;
+        return nullptr;
+    }
+
+    return parseExpression();
+}
+
+std::unique_ptr<Node> Parser::parseBlockItem() {
+    if (check(TokenType::INT_KEYWORD)) {
+        return parseDeclaration();
+    } else {
+        return parseStatement();
+    }
+    return nullptr;
+}
+
 std::unique_ptr<FunctionNode> Parser::parseFunction() {
     TokenType returnType = TokenType::UNKNOWN;
     std::string name;
@@ -185,6 +229,8 @@ std::unique_ptr<FunctionNode> Parser::parseFunction() {
     valid = valid && match(TokenType::VOID_KEYWORD);
     valid = valid && match(TokenType::CLOSE_PARENTHESIS);
     valid = valid && match(TokenType::OPEN_BRACE);
+
+    std::make_unique<BlockItemsNode>();
 
     auto statement = parseStatement();
 

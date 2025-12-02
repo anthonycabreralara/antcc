@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 enum class NodeType { 
     PROGRAM, 
@@ -183,6 +184,13 @@ public:
     std::unique_ptr<Node> expression1;
     std::unique_ptr<Node> expression2;
     AssignmentNode(std::unique_ptr<Node> expression1, std::unique_ptr<Node> expression2);
+};
+
+class BlockItemsNode : public Node {
+public:
+    std::vector<std::unique_ptr<Node>> instructions;
+
+    BlockItemsNode();
 };
 
 class FunctionNode : public Node {
