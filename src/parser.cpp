@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "ast.h"
 #include "lexer.h"
+#include "iostream"
 #include <memory>
 #include <vector>
 
@@ -126,6 +127,9 @@ std::unique_ptr<Node> Parser::parseFactor() {
     if (check(TokenType::CONSTANT)) {
         valid = valid && match(TokenType::CONSTANT);
         return std::make_unique<ConstantNode>(tokens[current - 1].value);
+    } else if (check(TokenType::IDENTIFIER)) {
+        valid = valid && match(TokenType::IDENTIFIER);
+        return std::make_unique<VarNode>(tokens[current - 1].value);
     } else if (check(TokenType::NEGATION) || check(TokenType::BITWISE_COMPLEMENT) || check(TokenType::NOT)) {
         TokenType opType = tokens[current].type;
         std::string opValue = tokens[current].value;
@@ -153,22 +157,38 @@ std::unique_ptr<Node> Parser::parseExpression(int minPrec) {
             check(TokenType::NOT_EQUAL) || check(TokenType::LESS_THAN) ||
             check(TokenType::LESS_OR_EQUAL) || check(TokenType::GREATER_THAN) ||
             check(TokenType::GREATER_OR_EQUAL) && getPrecidence(tokens[current].value) >= minPrec) {
-        TokenType opType = tokens[current].type;
-        std::string opValue = tokens[current].value;
-        valid = valid && match(opType);
-        auto op = getBinOp(opValue);
-        auto right = parseExpression(getPrecidence(opValue) + 1);
-        left = std::make_unique<BinaryNode>(std::move(op), std::move(left), std::move(right));
+        if (check(TokenType(TokenType::EQUAL))) {
+            valid = valid && match(TokenType(TokenType::EQUAL));
+            auto right = parseExpression(getPrecidence(tokens[current].value));
+            left = std::make_unique<AssignmentNode>(std::move(left), std::move(right));
+        } else {
+            TokenType opType = tokens[current].type;
+            std::string opValue = tokens[current].value;
+            valid = valid && match(opType);
+            auto op = getBinOp(opValue);
+            auto right = parseExpression(getPrecidence(opValue) + 1);
+            left = std::make_unique<BinaryNode>(std::move(op), std::move(left), std::move(right));
+        }
     }
     return std::move(left);
 
 }
 
 std::unique_ptr<Node> Parser::parseStatement() {
-    valid = valid && match(TokenType::RETURN_KEYWORD);
-    auto expression = parseExpression(0);
-    valid = valid && match(TokenType::SEMICOLON);
-    return std::make_unique<ReturnNode>(std::move(expression));
+    if (check(TokenType::RETURN_KEYWORD)) {
+        valid = valid && match(TokenType::RETURN_KEYWORD);
+        auto expression = parseExpression(0);
+        valid = valid && match(TokenType::SEMICOLON);
+        return std::make_unique<ReturnNode>(std::move(expression));
+    } else if (check(TokenType::SEMICOLON)) {
+        valid = valid && match(TokenType::SEMICOLON);
+    } else {
+        auto expression = parseExpression(0);
+        valid = valid && match(TokenType::SEMICOLON);
+        return expression;
+    }
+    return nullptr;
+
 }
 
 std::unique_ptr<Node> Parser::parseDeclaration() {
@@ -197,11 +217,16 @@ std::unique_ptr<Node> Parser::parseDeclaration() {
     if (check(TokenType::EQUAL)) {
         valid = valid && match(TokenType::EQUAL);
     } else {
-        valid = false;
-        return nullptr;
+        valid = valid && match(TokenType::SEMICOLON);
+        return std::make_unique<DeclarationNode>(identifier, nullptr);
     }
 
-    return parseExpression();
+    auto declarationExpression = parseExpression(0);
+
+    valid = valid && match(TokenType::SEMICOLON);
+
+
+    return std::make_unique<DeclarationNode>(identifier, std::move(declarationExpression));
 }
 
 std::unique_ptr<Node> Parser::parseBlockItem() {
@@ -232,13 +257,20 @@ std::unique_ptr<FunctionNode> Parser::parseFunction() {
     valid = valid && match(TokenType::CLOSE_PARENTHESIS);
     valid = valid && match(TokenType::OPEN_BRACE);
 
-    std::make_unique<BlockItemsNode>();
+    auto body = std::make_unique<BlockItemsNode>();
 
-    auto statement = parseStatement();
+    while (!check(TokenType::CLOSE_BRACE)) {
+        if (current >= tokens.size()) {
+            std::cout << "Missing } in function." << std::endl;
+            return nullptr;
+        }
+        auto nextBlockItem = parseBlockItem();
+        body->instructions.push_back(std::move(nextBlockItem));
+    }
 
     valid = valid && match(TokenType::CLOSE_BRACE);
 
-    return std::make_unique<FunctionNode>(name, static_cast<int>(returnType), std::move(statement));
+    return std::make_unique<FunctionNode>(name, static_cast<int>(returnType), std::move(body));
 }
 
 std::unique_ptr<ProgramNode> Parser::parseProgram() {

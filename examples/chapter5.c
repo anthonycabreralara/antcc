@@ -1,4 +1,3 @@
 int main(void) {
-    int a = 5;
-    return 0;
+    return 2 + 2;
 }

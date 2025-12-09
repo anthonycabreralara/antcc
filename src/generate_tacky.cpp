@@ -37,8 +37,12 @@ std::unique_ptr<TackyIRNode> generateTacky(const Node* node, TackyIRInstructions
         case NodeType::FUNCTION: {
             const auto* functionNode = static_cast<const FunctionNode*>(node);
             auto inst = std::make_unique<TackyIRInstructions>();
-            auto ret = generateTacky(functionNode->statement.get(), inst.get());
-            inst->instructions.push_back(std::move(ret));
+            //skip for parser
+            //auto ret = generateTacky(functionNode->statement.get(), inst.get());
+            //inst->instructions.push_back(std::move(ret));
+            for (const auto& blockItem: functionNode->block->instructions) {
+                auto item = generateTacky(blockItem.get(), inst.get());
+            }
 
             return std::make_unique<TackyIRFunction>(
                 functionNode->name,

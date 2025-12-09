@@ -197,8 +197,8 @@ class FunctionNode : public Node {
 public:
     std::string name;
     int returnType; // Or TokenType if you include lexer.h here
-    std::unique_ptr<Node> statement;
-    FunctionNode(std::string n, int r, std::unique_ptr<Node> stmt);
+    std::unique_ptr<BlockItemsNode> block;
+    FunctionNode(std::string name, int returnType, std::unique_ptr<BlockItemsNode> block);
 };
 
 class ProgramNode : public Node {

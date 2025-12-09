@@ -112,11 +112,9 @@ AssignmentNode::AssignmentNode(std::unique_ptr<Node> expression1, std::unique_pt
     type = NodeType::ASSIGNMENT;
 }
 
-FunctionNode::FunctionNode(std::string n, int r, std::unique_ptr<Node> stmt) {
+FunctionNode::FunctionNode(std::string name, int returnType, std::unique_ptr<BlockItemsNode> block)
+    : name(std::move(name)), returnType(returnType), block(std::move(block)) {
     type = NodeType::FUNCTION;
-    name = std::move(n);
-    returnType = r;
-    statement = std::move(stmt);
 }
 
 BlockItemsNode::BlockItemsNode() {}
@@ -133,6 +131,7 @@ void printAST(const Node* node, int count) {
 
     switch (node->type) {
         case NodeType::PROGRAM: {
+            std::cout << "AST TREE: " << std::endl;
             const ProgramNode* programNode = static_cast<const ProgramNode*>(node);
             std::cout << "Program(" << std::endl;
             printAST(programNode->function.get(), count + 3);
@@ -146,26 +145,67 @@ void printAST(const Node* node, int count) {
             printSpace(count + 3);
             std::cout << "name=" << functionNode->name << std::endl;
             printSpace(count + 3);
-            std::cout << "body=";
-            printAST(functionNode->statement.get(), count + 3);
-            std::cout << std::endl;
+            std::cout << "body=[" << std::endl;
+            
+            for (const auto& item: functionNode->block->instructions) {
+                printAST(item.get(), count + 6);
+            }
+            
+            printSpace(5);
+            std::cout << "]" << std::endl;
             printSpace(count);
             std::cout << ")" << std::endl;
             break;
         }
+        case NodeType::DECLARATION: {
+            const DeclarationNode* declaration = static_cast<const DeclarationNode*>(node);
+            printSpace(count);
+            std::cout << "Declaration(" << declaration->identifier << ", " << std::endl;
+            if (declaration->expression) {
+                printAST(declaration->expression.get(), count + 3);
+                std::cout << std::endl;
+            } else {
+                printSpace(count + 3);
+                std::cout << "None" << std::endl;
+            }
+            printSpace(count);
+            std::cout << ")" << std::endl;
+            break;
+        }
+        case NodeType::ASSIGNMENT: {
+            const AssignmentNode* assignment = static_cast<const AssignmentNode*>(node);
+            printSpace(count);
+            std::cout << "Assignment(" << std::endl;
+            printAST(assignment->expression1.get(), count + 3);
+            std::cout << "," << std::endl;
+            printAST(assignment->expression2.get(), count + 3);
+            std::cout << std::endl;
+            printSpace(count); 
+            std::cout << ")" << std::endl;
+
+            
+            break;
+        }
         case NodeType::RETURN: {
             const ReturnNode* returnNode = static_cast<const ReturnNode*>(node);
+            printSpace(count);
             std::cout << "Return(" << std::endl;
             printAST(returnNode->expr.get(), count + 3);
             std::cout << std::endl;
             printSpace(count);
-            std::cout << ")";
+            std::cout << ")" << std::endl;
             break;
         }
         case NodeType::CONSTANT: {
             const ConstantNode* constantNode = static_cast<const ConstantNode*>(node);
             printSpace(count);
             std::cout << "Constant(" << constantNode->value << ")";
+            break;
+        }
+        case NodeType::VAR: {
+            const VarNode* varNode = static_cast<const VarNode*>(node);
+            printSpace(count);
+            std::cout << "Var(" << varNode->identifier << ")";
             break;
         }
         case NodeType::UNARY_OP: {
@@ -261,6 +301,10 @@ void printAST(const Node* node, int count) {
             std::cout << "GreaterOrEqual";
             break;
         }
+        default:
+            printSpace(count);
+            std::cout << "Unvalid node" << std::endl;
+            break;
 
     }
 }
